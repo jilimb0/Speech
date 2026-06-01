@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./services/analysis" },
+    { "path": "./services/speech" },
+    { "path": "./services/sessions" },
+    { "path": "./apps/bot" },
+    { "path": "./apps/api" },
+    { "path": "./apps/web-miniapp" }
+  ],
+  "files": []
+}
