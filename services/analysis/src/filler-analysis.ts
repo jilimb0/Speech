@@ -42,31 +42,13 @@ function classifySpeechRate(wpm: number): SpeechRate {
 }
 
 /**
- * Считает вхождения fillers в тексте.
- * Многословные fillers матчатся первыми, чтобы избежать двойного подсчёта.
- * Возвращает карту filler -> count и маску занятых позиций.
+ * Граница слова для кириллицы: пробел или начало/конец строки.
+ * \b не работает с Unicode в JS, поэтому используем lookahead/lookbehind.
  */
-function countFillers(
-  normalizedText: string,
-  customFillers: string[] = [],
-): Map<string, number> {
-  const fillers = [...customFillers, ...ALL_FILLERS];
-  const counts = new Map<string, number>();
-
-  // Работаем с текстом как со строкой для поиска multi-token fillers
-  let workingText = normalizedText;
-
-  for (const filler of fillers) {
-    const pattern = new RegExp(`\\b${escapeRegex(filler)}\\b`, 'g');
-    const matches = workingText.match(pattern);
-    if (matches && matches.length > 0) {
-      counts.set(filler, (counts.get(filler) ?? 0) + matches.length);
-      // Заменяем найденные вхождения плейсхолдером, чтобы не считать дважды
-      workingText = workingText.replace(pattern, ' '.repeat(filler.length));
-    }
-  }
-
-  return counts;
+function buildCyrillicPattern(filler: string): RegExp {
+  const escaped = escapeRegex(filler);
+  // Граница: начало строки или пробел слева, конец строки или пробел справа
+  return new RegExp(`(?:^|(?<= ))${escaped}(?=$| )`, 'g');
 }
 
 function escapeRegex(str: string): string {
@@ -74,12 +56,33 @@ function escapeRegex(str: string): string {
 }
 
 /**
+ * Считает вхождения fillers в тексте.
+ * Многословные fillers матчатся первыми, чтобы избежать двойного подсчёта.
+ */
+function countFillers(normalizedText: string, customFillers: string[] = []): Map<string, number> {
+  // custom fillers идут первыми, затем стандартные (multi перед single уже в ALL_FILLERS)
+  const fillers = [...customFillers, ...ALL_FILLERS];
+  const counts = new Map<string, number>();
+
+  let workingText = normalizedText;
+
+  for (const filler of fillers) {
+    const pattern = buildCyrillicPattern(filler);
+    const matches = workingText.match(pattern);
+    if (matches && matches.length > 0) {
+      counts.set(filler, (counts.get(filler) ?? 0) + matches.length);
+      // Заменяем найденные вхождения пробелами, чтобы не считать дважды
+      workingText = workingText.replace(pattern, ' '.repeat(filler.length));
+    }
+  }
+
+  return counts;
+}
+
+/**
  * Находит повторяющиеся слова, которые не входят в словарь fillers.
  */
-function findRepeatedWords(
-  tokens: string[],
-  fillerSet: Set<string>,
-): RepeatedWord[] {
+function findRepeatedWords(tokens: string[], fillerSet: Set<string>): RepeatedWord[] {
   const wordCounts = new Map<string, number>();
 
   for (const token of tokens) {

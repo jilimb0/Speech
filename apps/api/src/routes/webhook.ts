@@ -2,12 +2,7 @@ import { rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { analyzeFillers, calculateScore } from '@speech/analysis';
-import {
-  countTodaySessions,
-  createSession,
-  getSessionsByUserId,
-  upsertUser,
-} from '@speech/sessions';
+import { countTodaySessions, createSession, upsertUser } from '@speech/sessions';
 import { ManagedWhisperProvider, SpeechService } from '@speech/speech';
 import type { FastifyInstance } from 'fastify';
 import TelegramBot from 'node-telegram-bot-api';
@@ -51,8 +46,8 @@ async function handleUpdate(bot: TelegramBot, update: TelegramBot.Update): Promi
   // Upsert пользователя
   const user = await upsertUser({
     telegramUserId: from.id,
-    username: from.username,
-    firstName: from.first_name,
+    username: from.username ?? null,
+    firstName: from.first_name ?? null,
   });
 
   // Команды
@@ -62,7 +57,7 @@ async function handleUpdate(bot: TelegramBot, update: TelegramBot.Update): Promi
     if (text === '/start') {
       await bot.sendMessage(
         chatId,
-        `Привет! 👋\n\nЗапиши 30–60 секунд речи, и я покажу, какие слова-паразиты чаще всего тебе мешают.\n\nПросто отправь голосовое сообщение. Лучше всего — спонтанная речь, а не чтение текста.\n\n_Записи анализируются автоматически и не хранятся дольше необходимого._`,
+        'Привет! 👋\n\nЗапиши 30–60 секунд речи, и я покажу, какие слова-паразиты чаще всего тебе мешают.\n\nПросто отправь голосовое сообщение. Лучше всего — спонтанная речь, а не чтение текста.\n\n_Записи анализируются автоматически и не хранятся дольше необходимого._',
         { parse_mode: 'Markdown' },
       );
       return;
@@ -71,7 +66,7 @@ async function handleUpdate(bot: TelegramBot, update: TelegramBot.Update): Promi
     if (text === '/help') {
       await bot.sendMessage(
         chatId,
-        `*Как пользоваться:*\n\n1. Отправь голосовое сообщение 30–60 секунд\n2. Получи отчёт по словам-паразитам\n3. Открой историю, чтобы отследить прогресс\n\n*Команды:*\n/start — начало\n/history — открыть историю\n/help — эта справка`,
+        '*Как пользоваться:*\n\n1. Отправь голосовое сообщение 30–60 секунд\n2. Получи отчёт по словам-паразитам\n3. Открой историю, чтобы отследить прогресс\n\n*Команды:*\n/start — начало\n/history — открыть историю\n/help — эта справка',
         { parse_mode: 'Markdown' },
       );
       return;
@@ -80,9 +75,7 @@ async function handleUpdate(bot: TelegramBot, update: TelegramBot.Update): Promi
     if (text === '/history') {
       await bot.sendMessage(chatId, 'Открой историю своих сессий:', {
         reply_markup: {
-          inline_keyboard: [
-            [{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }],
-          ],
+          inline_keyboard: [[{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }]],
         },
       });
       return;
@@ -103,10 +96,7 @@ async function handleUpdate(bot: TelegramBot, update: TelegramBot.Update): Promi
   }
 
   // Любой другой тип
-  await bot.sendMessage(
-    chatId,
-    'Пришли голосовое сообщение 30–60 секунд, и я разберу речь.',
-  );
+  await bot.sendMessage(chatId, 'Пришли голосовое сообщение 30–60 секунд, и я разберу речь.');
 }
 
 async function handleVoiceMessage(
@@ -143,9 +133,7 @@ async function handleVoiceMessage(
       `На бесплатном плане доступно ${config.freeDailySessionLimit} сессии в день. Возвращайся завтра или открой историю, чтобы узнать о premium.`,
       {
         reply_markup: {
-          inline_keyboard: [
-            [{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }],
-          ],
+          inline_keyboard: [[{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }]],
         },
       },
     );
@@ -221,9 +209,12 @@ async function handleVoiceMessage(
     });
 
     // Формируем отчёт
-    const rateLabel = { slow: 'медленный', moderate: 'умеренный', fast: 'быстрый' }[
-      analysis.speechRate
-    ];
+    const rateLabelMap: Record<string, string> = {
+      slow: 'медленный',
+      moderate: 'умеренный',
+      fast: 'быстрый',
+    };
+    const rateLabel = rateLabelMap[analysis.speechRate] ?? 'умеренный';
 
     const topFillersText =
       analysis.topFillers.length > 0
@@ -233,14 +224,7 @@ async function handleVoiceMessage(
             .join(', ')
         : 'не найдено';
 
-    const report =
-      `*Результат анализа*\n\n` +
-      `⏱ Длительность: ${durationSec} сек\n` +
-      `🔤 Слов-паразитов: ${analysis.totalFillers}\n` +
-      `📌 Чаще всего: ${topFillersText}\n` +
-      `🎙 Темп: ${rateLabel}\n` +
-      `⭐ Оценка: ${scoring.sessionScore}/100\n\n` +
-      `💡 ${scoring.advice}`;
+    const report = `*Результат анализа*\n\n⏱ Длительность: ${durationSec} сек\n🔤 Слов-паразитов: ${analysis.totalFillers}\n📌 Чаще всего: ${topFillersText}\n🎙 Темп: ${rateLabel}\n⭐ Оценка: ${scoring.sessionScore}/100\n\n💡 ${scoring.advice}`;
 
     await bot.editMessageText(report, {
       chat_id: chatId,
@@ -256,16 +240,17 @@ async function handleVoiceMessage(
       },
     });
   } catch (err) {
-    const errorMessage =
-      err instanceof Error ? err.message : 'Unknown error';
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.error('Voice processing error:', errorMessage);
 
-    await bot.editMessageText(
-      'Сервис сейчас занят. Попробуй ещё раз через минуту.',
-      { chat_id: chatId, message_id: statusMsg.message_id },
-    ).catch(() => {
-      // Игнорируем ошибку редактирования
-    });
+    await bot
+      .editMessageText('Сервис сейчас занят. Попробуй ещё раз через минуту.', {
+        chat_id: chatId,
+        message_id: statusMsg.message_id,
+      })
+      .catch(() => {
+        // Игнорируем ошибку редактирования
+      });
   } finally {
     // Удаляем временный файл
     if (tempFilePath) {

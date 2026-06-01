@@ -1,9 +1,4 @@
-import type {
-  CreateSessionInput,
-  ProgressSummary,
-  Session,
-  SessionListItem,
-} from '@speech/shared';
+import type { CreateSessionInput, ProgressSummary, Session, SessionListItem } from '@speech/shared';
 import { getDb } from './db.js';
 
 interface SessionRow {
@@ -64,7 +59,7 @@ export async function createSession(input: CreateSessionInput): Promise<Session>
       ${input.userId}, 'telegram', ${input.audioDurationSec},
       ${input.rawTranscript}, ${input.normalizedTranscript}, ${input.transcriptionStatus},
       ${input.totalWords}, ${input.totalFillers}, ${input.fillersPerMinute}, ${input.wordsPerMinute},
-      ${input.speechRate}, ${sql.json(input.topFillers)}, ${sql.json(input.repeatedWords)},
+      ${input.speechRate}, ${JSON.stringify(input.topFillers)}, ${JSON.stringify(input.repeatedWords)},
       ${input.sessionScore}, ${input.summaryText}, ${input.advice}
     )
     RETURNING *
@@ -161,9 +156,7 @@ export async function getProgressSummary(userId: string): Promise<ProgressSummar
 
   return {
     avgScore7d: stats?.avg_score_7d ? Math.round(stats.avg_score_7d) : null,
-    avgFillersPerMinute7d: stats?.avg_fpm_7d
-      ? Math.round(stats.avg_fpm_7d * 10) / 10
-      : null,
+    avgFillersPerMinute7d: stats?.avg_fpm_7d ? Math.round(stats.avg_fpm_7d * 10) / 10 : null,
     bestScore: stats?.best_score ?? null,
     totalSessions: Number(stats?.total_sessions ?? 0),
     lastSessionDelta,

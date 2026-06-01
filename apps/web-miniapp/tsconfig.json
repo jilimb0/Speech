@@ -9,10 +9,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "composite": true,
-    "noEmit": true
+    "noEmit": true,
+    "noPropertyAccessFromIndexSignature": false
   },
-  "references": [
-    { "path": "../../packages/shared" }
-  ],
+  "references": [{ "path": "../../packages/shared" }],
   "include": ["src/**/*"]
 }

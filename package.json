@@ -24,17 +24,10 @@
     "vitest": "^2.1.8"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "biome check --write --no-errors-on-unmatched"
-    ],
-    "*.{json,css,md}": [
-      "biome format --write --no-errors-on-unmatched"
-    ]
+    "*.{ts,tsx,js,jsx}": ["biome check --write --no-errors-on-unmatched"],
+    "*.{json,css,md}": ["biome format --write --no-errors-on-unmatched"]
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome",
-      "esbuild"
-    ]
+    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
   }
 }

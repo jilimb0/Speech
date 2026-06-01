@@ -3,8 +3,10 @@ import { analyzeFillers } from '../filler-analysis.js';
 
 describe('analyzeFillers', () => {
   it('считает однословные fillers', () => {
+    // "ну вот" — отдельный multi-token filler, поэтому последнее "ну" поглощается им
+    // Используем текст без "ну вот" чтобы тестировать именно одиночное "ну"
     const result = analyzeFillers({
-      normalizedTranscript: 'ну я думаю ну это хорошо ну вот',
+      normalizedTranscript: 'ну я думаю ну это хорошо ну понимаешь',
       audioDurationSec: 10,
     });
 
@@ -93,8 +95,7 @@ describe('analyzeFillers', () => {
 
   it('находит повторяющиеся слова вне словаря', () => {
     const result = analyzeFillers({
-      normalizedTranscript:
-        'проект проект проект это важный проект для нашей команды',
+      normalizedTranscript: 'проект проект проект это важный проект для нашей команды',
       audioDurationSec: 10,
     });
 

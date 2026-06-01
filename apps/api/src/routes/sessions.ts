@@ -13,7 +13,7 @@ import type { FastifyInstance } from 'fastify';
 async function validateTelegramInitData(
   initData: string,
   botToken: string,
-): Promise<{ userId: number; username?: string } | null> {
+): Promise<{ userId: number; username?: string | null } | null> {
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
   if (!hash) return null;
@@ -44,11 +44,7 @@ async function validateTelegramInitData(
     ['sign'],
   );
 
-  const signature = await crypto.subtle.sign(
-    'HMAC',
-    dataKey,
-    encoder.encode(dataCheckString),
-  );
+  const signature = await crypto.subtle.sign('HMAC', dataKey, encoder.encode(dataCheckString));
 
   const expectedHash = Buffer.from(signature).toString('hex');
 
@@ -58,7 +54,7 @@ async function validateTelegramInitData(
   if (!userStr) return null;
 
   const userObj = JSON.parse(userStr) as { id: number; username?: string };
-  return { userId: userObj.id, username: userObj.username };
+  return { userId: userObj.id, username: userObj.username ?? null };
 }
 
 export async function sessionRoutes(app: FastifyInstance): Promise<void> {
@@ -69,7 +65,7 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
       return reply.code(401).send({ ok: false, error: 'Missing initData' });
     }
 
-    const botToken = process.env['TELEGRAM_BOT_TOKEN'];
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) {
       return reply.code(500).send({ ok: false, error: 'Server misconfiguration' });
     }
@@ -80,14 +76,12 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
     }
 
     // Прикрепляем к request
-    (request as typeof request & { telegramUserId: number }).telegramUserId =
-      telegramUser.userId;
+    (request as typeof request & { telegramUserId: number }).telegramUserId = telegramUser.userId;
   });
 
   // GET /api/me
   app.get('/api/me', async (request, reply) => {
-    const telegramUserId = (request as typeof request & { telegramUserId: number })
-      .telegramUserId;
+    const telegramUserId = (request as typeof request & { telegramUserId: number }).telegramUserId;
     const user = await getUserByTelegramId(telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
     return { ok: true, data: user };
@@ -112,8 +106,7 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
 
   // GET /api/sessions/:id
   app.get<{ Params: { id: string } }>('/api/sessions/:id', async (request, reply) => {
-    const telegramUserId = (request as typeof request & { telegramUserId: number })
-      .telegramUserId;
+    const telegramUserId = (request as typeof request & { telegramUserId: number }).telegramUserId;
     const user = await getUserByTelegramId(telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
 
@@ -127,8 +120,7 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
 
   // GET /api/progress/summary
   app.get('/api/progress/summary', async (request, reply) => {
-    const telegramUserId = (request as typeof request & { telegramUserId: number })
-      .telegramUserId;
+    const telegramUserId = (request as typeof request & { telegramUserId: number }).telegramUserId;
     const user = await getUserByTelegramId(telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
 

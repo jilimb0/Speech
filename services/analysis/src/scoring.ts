@@ -34,7 +34,7 @@ function getScoreLabel(score: number): string {
   for (const category of SCORE_CATEGORIES) {
     if (score >= category.min) return category.label;
   }
-  return SCORE_CATEGORIES[SCORE_CATEGORIES.length - 1].label;
+  return 'Речь заметно засорена';
 }
 
 function buildAdvice(input: ScoringInput): string {

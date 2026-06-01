@@ -18,7 +18,8 @@ function formatDate(date: Date): string {
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 85 ? '#34c759' : score >= 70 ? '#ff9500' : score >= 50 ? '#ff6b35' : '#ff3b30';
+  const color =
+    score >= 85 ? '#34c759' : score >= 70 ? '#ff9500' : score >= 50 ? '#ff6b35' : '#ff3b30';
   return (
     <span className={styles.score} style={{ color }}>
       {score}
@@ -73,11 +74,7 @@ export function HistoryScreen({ onSelectSession, onProgress }: Props) {
         <ul className={styles.list}>
           {sessions.map((s) => (
             <li key={s.id}>
-              <button
-                type="button"
-                className={styles.card}
-                onClick={() => onSelectSession(s.id)}
-              >
+              <button type="button" className={styles.card} onClick={() => onSelectSession(s.id)}>
                 <div className={styles.cardTop}>
                   <span className={styles.date}>{formatDate(s.createdAt)}</span>
                   <ScoreBadge score={s.sessionScore} />

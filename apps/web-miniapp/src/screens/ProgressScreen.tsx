@@ -86,7 +86,8 @@ export function ProgressScreen({ onBack }: Props) {
         {progress.lastSessionDelta !== null && (
           <div className={styles.card}>
             <span className={styles.cardValue} style={{ color: deltaColor }}>
-              {deltaSign}{progress.lastSessionDelta}
+              {deltaSign}
+              {progress.lastSessionDelta}
             </span>
             <span className={styles.cardLabel}>Изменение к прошлой сессии</span>
           </div>
