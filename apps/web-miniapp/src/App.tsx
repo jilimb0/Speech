@@ -1,38 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { setInitData } from './api/client.js';
+import { useTelegram } from './hooks/index.js';
 import { HistoryScreen } from './screens/HistoryScreen.js';
 import { ProgressScreen } from './screens/ProgressScreen.js';
 import { SessionDetailScreen } from './screens/SessionDetailScreen.js';
 
-type Screen = { name: 'history' } | { name: 'session'; id: string } | { name: 'progress' };
-
 export function App() {
-  const [screen, setScreen] = useState<Screen>({ name: 'history' });
+  const { initData } = useTelegram();
 
-  // Применяем тему Telegram
   useEffect(() => {
-    const tg = (
-      window as Window & { Telegram?: { WebApp?: { expand?: () => void; ready?: () => void } } }
-    ).Telegram;
-    tg?.WebApp?.expand?.();
-    tg?.WebApp?.ready?.();
-  }, []);
-
-  const navigate = (s: Screen) => setScreen(s);
-
-  if (screen.name === 'session') {
-    return (
-      <SessionDetailScreen sessionId={screen.id} onBack={() => navigate({ name: 'history' })} />
-    );
-  }
-
-  if (screen.name === 'progress') {
-    return <ProgressScreen onBack={() => navigate({ name: 'history' })} />;
-  }
+    if (initData) setInitData(initData);
+  }, [initData]);
 
   return (
-    <HistoryScreen
-      onSelectSession={(id) => navigate({ name: 'session', id })}
-      onProgress={() => navigate({ name: 'progress' })}
-    />
+    <Router>
+      <Routes>
+        <Route path="/" element={<HistoryScreen />} />
+        <Route path="/session/:id" element={<SessionDetailScreen />} />
+        <Route path="/progress" element={<ProgressScreen />} />
+      </Routes>
+    </Router>
   );
 }

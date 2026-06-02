@@ -1,14 +1,12 @@
 import type { SessionListItem } from '@speech/shared';
+import { Badge, Button, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
-import styles from './HistoryScreen.module.css';
+import { PageHeader } from '../components/PageHeader.js';
+import { ScoreBadge } from '../components/ScoreBadge.js';
 
-interface Props {
-  onSelectSession: (id: string) => void;
-  onProgress: () => void;
-}
-
-function formatDate(date: Date): string {
+function formatDate(date: Date | string): string {
   return new Intl.DateTimeFormat('ru', {
     day: 'numeric',
     month: 'short',
@@ -17,17 +15,8 @@ function formatDate(date: Date): string {
   }).format(new Date(date));
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  const color =
-    score >= 85 ? '#34c759' : score >= 70 ? '#ff9500' : score >= 50 ? '#ff6b35' : '#ff3b30';
-  return (
-    <span className={styles.score} style={{ color }}>
-      {score}
-    </span>
-  );
-}
-
-export function HistoryScreen({ onSelectSession, onProgress }: Props) {
+export function HistoryScreen() {
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,51 +29,73 @@ export function HistoryScreen({ onSelectSession, onProgress }: Props) {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className={styles.center}>
-        <p className={styles.hint}>Загружаем историю…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.center}>
-        <p className={styles.error}>{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>История</h1>
-        <button type="button" className={styles.progressBtn} onClick={onProgress}>
-          Прогресс
-        </button>
-      </header>
+    <div className="min-h-dvh pb-20">
+      <PageHeader
+        title="История"
+        right={
+          <Button variant="ghost" size="sm" onClick={() => navigate('/progress')}>
+            Прогресс
+          </Button>
+        }
+      />
 
-      {sessions.length === 0 ? (
-        <div className={styles.empty}>
-          <p>Сессий пока нет.</p>
-          <p className={styles.hint}>Отправь голосовое сообщение боту, чтобы начать.</p>
+      {loading && (
+        <div className="p-4 flex flex-col gap-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: skeleton list
+            <Skeleton key={i} className="h-16 w-full rounded-xl" />
+          ))}
         </div>
-      ) : (
-        <ul className={styles.list}>
+      )}
+
+      {!loading && error && (
+        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-4 text-center">
+          <Text className="text-[#ff3b30]">{error}</Text>
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            Повторить
+          </Button>
+        </div>
+      )}
+
+      {!loading && !error && sessions.length === 0 && (
+        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-2 text-center">
+          <Text>Сессий пока нет.</Text>
+          <Text className="text-[var(--tg-theme-hint-color)] text-sm">
+            Отправь голосовое сообщение боту, чтобы начать.
+          </Text>
+        </div>
+      )}
+
+      {!loading && !error && sessions.length > 0 && (
+        <ul>
           {sessions.map((s) => (
             <li key={s.id}>
-              <button type="button" className={styles.card} onClick={() => onSelectSession(s.id)}>
-                <div className={styles.cardTop}>
-                  <span className={styles.date}>{formatDate(s.createdAt)}</span>
+              <button
+                type="button"
+                onClick={() => navigate(`/session/${s.id}`)}
+                className="w-full text-left px-4 py-3.5 border-b border-[var(--tg-theme-secondary-bg-color)] active:bg-[var(--tg-theme-secondary-bg-color)] transition-colors"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <Text className="text-[15px]">{formatDate(s.createdAt)}</Text>
                   <ScoreBadge score={s.sessionScore} />
                 </div>
-                <div className={styles.cardBottom}>
-                  <span className={styles.meta}>{s.audioDurationSec} сек</span>
-                  <span className={styles.meta}>
+                <div className="flex items-center gap-3">
+                  <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
+                    {s.audioDurationSec} сек
+                  </Text>
+                  <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
                     {s.totalFillers} паразитов
-                    {s.topFiller ? ` · «${s.topFiller.filler}»` : ''}
-                  </span>
+                    {s.topFiller ? (
+                      <>
+                        {' '}
+                        ·{' '}
+                        <Badge variant="default" className="text-xs">
+                          «{s.topFiller.filler}»
+                        </Badge>
+                      </>
+                    ) : null}
+                  </Text>
                 </div>
               </button>
             </li>

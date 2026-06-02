@@ -1,127 +1,140 @@
 import type { Session } from '@speech/shared';
+import { Badge, Card, Divider, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { api } from '../api/client.js';
-import styles from './SessionDetailScreen.module.css';
+import { BackButton } from '../components/BackButton.js';
+import { PageHeader } from '../components/PageHeader.js';
+import { ScoreRing } from '../components/ScoreRing.js';
 
-interface Props {
-  sessionId: string;
-  onBack: () => void;
+const RATE_LABELS: Record<string, string> = {
+  slow: 'Медленный 🐢',
+  moderate: 'Умеренный ✅',
+  fast: 'Быстрый ⚡',
+};
+
+function MetricCard({ value, label }: { value: string | number; label: string }) {
+  return (
+    <Card className="flex flex-col gap-1 p-3 bg-[var(--tg-theme-secondary-bg-color)] border-0 rounded-xl">
+      <Text className="text-xl font-semibold">{value}</Text>
+      <Text className="text-xs text-[var(--tg-theme-hint-color)] leading-tight">{label}</Text>
+    </Card>
+  );
 }
 
-const RATE_LABELS = {
-  slow: 'медленный',
-  moderate: 'умеренный',
-  fast: 'быстрый',
-} as const;
-
-export function SessionDetailScreen({ sessionId, onBack }: Props) {
+export function SessionDetailScreen() {
+  const { id } = useParams<{ id: string }>();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) return;
     api
-      .getSession(sessionId)
+      .getSession(id)
       .then(setSession)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Ошибка загрузки'))
       .finally(() => setLoading(false));
-  }, [sessionId]);
+  }, [id]);
 
   if (loading) {
     return (
-      <div className={styles.center}>
-        <p>Загружаем сессию…</p>
+      <div className="min-h-dvh">
+        <PageHeader title="Сессия" left={<BackButton />} />
+        <div className="p-4 flex flex-col gap-4">
+          <Skeleton className="h-36 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
+        </div>
       </div>
     );
   }
 
   if (error || !session) {
     return (
-      <div className={styles.center}>
-        <p className={styles.error}>{error ?? 'Сессия не найдена'}</p>
-        <button type="button" className={styles.backBtn} onClick={onBack}>
-          ← Назад
-        </button>
+      <div className="min-h-dvh">
+        <PageHeader title="Сессия" left={<BackButton />} />
+        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-4 text-center">
+          <Text className="text-[#ff3b30]">{error ?? 'Сессия не найдена'}</Text>
+        </div>
       </div>
     );
   }
 
-  const scoreColor =
-    session.sessionScore >= 85
-      ? '#34c759'
-      : session.sessionScore >= 70
-        ? '#ff9500'
-        : session.sessionScore >= 50
-          ? '#ff6b35'
-          : '#ff3b30';
-
   const transcriptSnippet =
-    session.normalizedTranscript.length > 200
-      ? `${session.normalizedTranscript.slice(0, 200)}…`
+    session.normalizedTranscript.length > 250
+      ? `${session.normalizedTranscript.slice(0, 250)}…`
       : session.normalizedTranscript;
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <button type="button" className={styles.backBtn} onClick={onBack}>
-          ← Назад
-        </button>
-        <span className={styles.headerTitle}>Сессия</span>
-      </header>
+    <div className="min-h-dvh pb-10">
+      <PageHeader title="Сессия" left={<BackButton />} />
 
-      <div className={styles.scoreBlock}>
-        <span className={styles.scoreValue} style={{ color: scoreColor }}>
-          {session.sessionScore}
-        </span>
-        <span className={styles.scoreLabel}>{session.summaryText}</span>
+      {/* Score block */}
+      <div className="flex flex-col items-center py-8 gap-2">
+        <ScoreRing score={session.sessionScore} size={128} />
       </div>
 
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Метрики</h2>
-        <div className={styles.metrics}>
-          <div className={styles.metric}>
-            <span className={styles.metricValue}>{session.totalFillers}</span>
-            <span className={styles.metricLabel}>паразитов</span>
-          </div>
-          <div className={styles.metric}>
-            <span className={styles.metricValue}>{session.fillersPerMinute}</span>
-            <span className={styles.metricLabel}>в минуту</span>
-          </div>
-          <div className={styles.metric}>
-            <span className={styles.metricValue}>{session.wordsPerMinute}</span>
-            <span className={styles.metricLabel}>слов/мин</span>
-          </div>
-          <div className={styles.metric}>
-            <span className={styles.metricValue}>{RATE_LABELS[session.speechRate]}</span>
-            <span className={styles.metricLabel}>темп</span>
-          </div>
+      <Divider className="mx-4" />
+
+      {/* Metrics grid */}
+      <section className="p-4">
+        <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
+          Метрики
+        </Text>
+        <div className="grid grid-cols-2 gap-2.5">
+          <MetricCard value={session.totalFillers} label="Слов-паразитов" />
+          <MetricCard value={`${session.fillersPerMinute}/мин`} label="Паразитов в минуту" />
+          <MetricCard value={`${session.wordsPerMinute}`} label="Слов в минуту" />
+          <MetricCard value={RATE_LABELS[session.speechRate] ?? 'умеренный'} label="Темп речи" />
         </div>
-      </div>
+      </section>
 
+      <Divider className="mx-4" />
+
+      {/* Top fillers */}
       {session.topFillers.length > 0 && (
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Топ паразитов</h2>
-          <ul className={styles.fillerList}>
+        <section className="p-4">
+          <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
+            Топ паразитов
+          </Text>
+          <div className="flex flex-col gap-2">
             {session.topFillers.map((f) => (
-              <li key={f.filler} className={styles.fillerItem}>
-                <span className={styles.fillerWord}>«{f.filler}»</span>
-                <span className={styles.fillerCount}>{f.count} раз</span>
-              </li>
+              <div
+                key={f.filler}
+                className="flex items-center justify-between px-3 py-2.5 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl"
+              >
+                <Text className="font-medium">«{f.filler}»</Text>
+                <Badge variant="default">{f.count} раз</Badge>
+              </div>
             ))}
-          </ul>
-        </div>
+          </div>
+        </section>
       )}
 
+      {/* Transcript snippet */}
       {transcriptSnippet && (
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Фрагмент записи</h2>
-          <p className={styles.transcript}>{transcriptSnippet}</p>
-        </div>
+        <>
+          <Divider className="mx-4" />
+          <section className="p-4">
+            <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
+              Фрагмент записи
+            </Text>
+            <Text className="text-sm text-[var(--tg-theme-hint-color)] italic leading-relaxed">
+              {transcriptSnippet}
+            </Text>
+          </section>
+        </>
       )}
 
-      <div className={styles.adviceBlock}>
-        <p className={styles.advice}>💡 {session.advice}</p>
-      </div>
+      <Divider className="mx-4" />
+
+      {/* Advice */}
+      <section className="p-4">
+        <Card className="bg-[var(--tg-theme-secondary-bg-color)] border-0 rounded-2xl p-4">
+          <Text className="text-[15px] leading-relaxed">💡 {session.advice}</Text>
+        </Card>
+      </section>
     </div>
   );
 }
