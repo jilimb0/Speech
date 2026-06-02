@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build:web": "pnpm --filter @speech/web-miniapp build"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

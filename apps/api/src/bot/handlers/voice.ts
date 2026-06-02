@@ -5,7 +5,7 @@ import type { BotClient, Message } from '@jilimb0/tgwrapper';
 import { analyzeFillers, calculateScore } from '@speech/analysis';
 import { countTodaySessions, createSession, getUserByTelegramId } from '@speech/sessions';
 import type { FillerAnalysisResult, ScoringResult } from '@speech/shared';
-import { ManagedWhisperProvider, SpeechService } from '@speech/speech';
+import { FasterWhisperProvider, ManagedWhisperProvider, SpeechService } from '@speech/speech';
 import { config } from '../../config.js';
 import { TELEGRAM_FILE_BASE, getApiClient } from '../telegram-api.js';
 
@@ -24,14 +24,17 @@ interface SendMessageResult {
   result: { message_id: number };
 }
 
-const speechService = new SpeechService(new ManagedWhisperProvider());
+const speechProvider =
+  config.speechProvider === 'faster-whisper'
+    ? new FasterWhisperProvider()
+    : new ManagedWhisperProvider();
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+const speechService = new SpeechService(speechProvider);
 
 const RATE_LABELS: Record<string, string> = {
-  slow: 'медленный 🐢',
-  moderate: 'умеренный ✅',
-  fast: 'быстрый ⚡',
+  slow: 'медленный 🐢',
+  moderate: 'умеренный ✅',
+  fast: 'быстрый ⚡',
 };
 
 function scoreEmoji(score: number): string {
@@ -46,14 +49,14 @@ function buildReport(
   analysis: FillerAnalysisResult,
   scoring: ScoringResult,
 ): string {
-  const rateLabel = RATE_LABELS[analysis.speechRate] ?? 'умеренный';
+  const rateLabel = RATE_LABELS[analysis.speechRate] ?? 'умеренный';
   const topFillersText =
     analysis.topFillers.length > 0
       ? analysis.topFillers
           .slice(0, 3)
           .map((f) => `«${f.filler}» — ${f.count}`)
           .join(', ')
-      : 'не найдено';
+      : 'не найдено';
 
   return `*Результат анализа*\n\n⏱ Длительность: ${durationSec} сек\n🔤 Слов-паразитов: ${analysis.totalFillers}\n📌 Чаще всего: ${topFillersText}\n🎙 Темп: ${rateLabel}\n${scoreEmoji(scoring.sessionScore)} Оценка: ${scoring.sessionScore}/100\n\n💡 ${scoring.advice}`;
 }
@@ -80,8 +83,6 @@ async function deleteStatusMessage(chatId: number, messageId: number): Promise<v
     .catch(() => {});
 }
 
-// ─── main handler ─────────────────────────────────────────────────────────────
-
 export async function handleVoiceMessage(
   bot: BotClient,
   msg: Message,
@@ -97,10 +98,11 @@ export async function handleVoiceMessage(
   if (durationSec < config.minAudioDurationSec) {
     await bot.sendMessage(
       chatId,
-      `Слишком коротко. Запиши хотя бы ${config.minAudioDurationSec}–30 секунд живой речи.`,
+      `Слишком коротко. Запиши хотя бы ${config.minAudioDurationSec}–30 секунд живой речи.`,
     );
     return;
   }
+
   if (durationSec > config.maxAudioDurationSec) {
     await bot.sendMessage(
       chatId,
@@ -114,7 +116,7 @@ export async function handleVoiceMessage(
   if (user && (await countTodaySessions(user.id)) >= config.freeDailySessionLimit) {
     await bot.sendMessage(
       chatId,
-      `На бесплатном плане доступно ${config.freeDailySessionLimit} сессии в день. Возвращайся завтра или открой историю, чтобы узнать о premium.`,
+      `На бесплатном плане доступно ${config.freeDailySessionLimit} сессии в день. Возвращайся завтра или открой историю, чтобы узнать о premium.`,
       {
         reply_markup: {
           inline_keyboard: [[{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }]],
@@ -126,7 +128,7 @@ export async function handleVoiceMessage(
 
   const statusResult = (await api.callApiUnsafe('sendMessage', {
     chat_id: chatId,
-    text: 'Слушаю запись и ищу слова-паразиты, повторы и общий темп речи…',
+    text: 'Слушаю запись и ищу слова-паразиты, повторы и общий темп речи…',
   })) as SendMessageResult;
   const statusMessageId = statusResult.result.message_id;
 
@@ -141,64 +143,63 @@ export async function handleVoiceMessage(
       await deleteStatusMessage(chatId, statusMessageId);
       await bot.sendMessage(
         chatId,
-        'Не удалось нормально разобрать запись. Попробуй в более тихом месте.',
+        'Не удалось нормально разобрать запись. Попробуй в более тихом месте.',
       );
       return;
     }
 
     const analysis = analyzeFillers({
       normalizedTranscript: transcription.normalizedTranscript,
-      audioDurationSec: durationSec,
-      customFillers: user?.customFillerList ?? [],
+      rawTranscript: transcription.rawTranscript,
+      durationSec,
     });
 
     const scoring = calculateScore({
-      audioDurationSec: durationSec,
-      totalFillers: analysis.totalFillers,
-      fillersPerMinute: analysis.fillersPerMinute,
-      wordsPerMinute: analysis.wordsPerMinute,
+      fillersCount: analysis.totalFillers,
       speechRate: analysis.speechRate,
-      topFillers: analysis.topFillers,
-      repeatedWords: analysis.repeatedWords,
+      durationSec,
+      confidence: transcription.status === 'uncertain' ? 0.5 : 1,
     });
 
-    if (user) {
-      await createSession({
-        userId: user.id,
-        audioDurationSec: durationSec,
-        rawTranscript: transcription.rawTranscript,
-        normalizedTranscript: transcription.normalizedTranscript,
-        transcriptionStatus: transcription.status,
-        totalWords: analysis.totalWords,
-        totalFillers: analysis.totalFillers,
-        fillersPerMinute: analysis.fillersPerMinute,
-        wordsPerMinute: analysis.wordsPerMinute,
-        speechRate: analysis.speechRate,
-        topFillers: analysis.topFillers,
-        repeatedWords: analysis.repeatedWords,
-        sessionScore: scoring.sessionScore,
-        summaryText: scoring.summaryText,
-        advice: scoring.advice,
-      });
-    }
+    const session = user
+      ? await createSession({
+          userId: user.id,
+          transcript: transcription.rawTranscript,
+          normalizedTranscript: transcription.normalizedTranscript,
+          fillersCount: analysis.totalFillers,
+          topFillers: analysis.topFillers,
+          speechRate: analysis.speechRate,
+          durationSec,
+          score: scoring.sessionScore,
+          feedback: scoring.advice,
+          transcriptStatus: transcription.status,
+        })
+      : null;
 
     await deleteStatusMessage(chatId, statusMessageId);
+
     await bot.sendMessage(chatId, buildReport(durationSec, analysis, scoring), {
       parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '🎙 Записать ещё раз', callback_data: 'retry' },
-            { text: '📊 Открыть историю', web_app: { url: config.webAppUrl } },
-          ],
-        ],
-      },
+      reply_markup: session
+        ? {
+            inline_keyboard: [
+              [
+                {
+                  text: '📊 Открыть в Mini App',
+                  web_app: { url: `${config.webAppUrl}#/session/${session.id}` },
+                },
+              ],
+            ],
+          }
+        : undefined,
     });
-  } catch (err) {
-    console.error('[voice] Error:', err instanceof Error ? err.message : err);
+  } catch (error) {
     await deleteStatusMessage(chatId, statusMessageId);
-    await bot.sendMessage(chatId, 'Сервис сейчас занят. Попробуй ещё раз через минуту.');
+    await bot.sendMessage(chatId, 'Ошибка при обработке записи. Попробуй ещё раз чуть позже.');
+    console.error('Voice processing failed:', error);
   } finally {
-    if (tempFilePath) await rm(tempFilePath, { force: true }).catch(() => {});
+    if (tempFilePath) {
+      await rm(tempFilePath, { force: true }).catch(() => {});
+    }
   }
 }

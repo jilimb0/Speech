@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Route, HashRouter as Router, Routes } from 'react-router-dom';
 import { setInitData } from './api/client.js';
 import { useTelegram } from './hooks/index.js';
 import { HistoryScreen } from './screens/HistoryScreen.js';

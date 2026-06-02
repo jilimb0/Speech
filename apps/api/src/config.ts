@@ -8,4 +8,6 @@ export const config = {
   freeDailySessionLimit: Number(getEnv('FREE_DAILY_SESSION_LIMIT', '2')),
   minAudioDurationSec: Number(getEnv('MIN_AUDIO_DURATION_SEC', '15')),
   maxAudioDurationSec: Number(getEnv('MAX_AUDIO_DURATION_SEC', '90')),
+  speechProvider: getEnv('SPEECH_PROVIDER', 'managed'),
+  fasterWhisperUrl: getEnv('FASTER_WHISPER_URL', 'http://localhost:8001'),
 } as const;
