@@ -9,12 +9,12 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "validate": "pnpm --filter @speech/shared build && pnpm typecheck && pnpm lint",
+    "validate": "pnpm -r --filter @speech/shared --filter @speech/analysis --filter @speech/sessions --filter @speech/speech build && pnpm typecheck && pnpm lint",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
-    "build:web": "pnpm --filter @speech/web-miniapp build"
+    "build:web": "pnpm --filter @speech/shared build && pnpm --filter @speech/web-miniapp build"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
