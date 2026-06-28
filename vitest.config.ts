@@ -10,6 +10,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: ['node_modules/**', 'dist/**', '**/*.d.ts', '**/*.config.*', '**/index.ts'],
+      thresholds: {
+        lines: 40,
+        functions: 30,
+        branches: 25,
+        statements: 40,
+      },
     },
   },
 });
