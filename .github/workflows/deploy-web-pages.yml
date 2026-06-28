@@ -35,6 +35,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build web app
+        env:
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL || secrets.API_BASE_URL || 'https://speech-api.your-domain.com' }}
         run: pnpm build:web
 
       - name: Upload Pages artifact

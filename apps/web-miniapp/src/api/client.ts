@@ -6,8 +6,10 @@ export function setInitData(initData: string): void {
   _initData = initData;
 }
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+
 async function apiFetch<T>(path: string): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE}${path}`, {
     headers: {
       'x-telegram-init-data': _initData,
       'Content-Type': 'application/json',
