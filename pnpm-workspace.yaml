@@ -3,5 +3,6 @@ packages:
   - 'services/*'
   - 'packages/*'
 allowBuilds:
-  '@biomejs/biome': set this to true or false
-  esbuild: set this to true or false
+  '@biomejs/biome': true
+  esbuild: true
+  '@tgwrapper/core': true

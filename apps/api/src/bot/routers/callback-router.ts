@@ -1,4 +1,4 @@
-import type { BotClient, CallbackQuery } from '@jilimb0/tgwrapper';
+import type { BotClient, CallbackQuery } from '@tgwrapper/core';
 
 export function registerCallbackRouter(bot: BotClient): void {
   bot.on('callback_query', async (query: CallbackQuery) => {

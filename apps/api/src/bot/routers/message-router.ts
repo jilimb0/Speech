@@ -1,5 +1,5 @@
-import type { BotClient, Message } from '@jilimb0/tgwrapper';
 import { upsertUser } from '@speech/sessions';
+import type { BotClient, Message } from '@tgwrapper/core';
 import { handleHelp, handleHistory, handleStart } from '../handlers/commands.js';
 import { type VoiceMessage, handleVoiceMessage } from '../handlers/voice.js';
 

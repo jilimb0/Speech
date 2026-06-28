@@ -12,7 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@jilimb0/tgwrapper": "^0.12.0",
+    "@tgwrapper/core": "github:jilimb0/TGWrapper#main",
     "@speech/analysis": "workspace:*",
     "@speech/sessions": "workspace:*",
     "@speech/shared": "workspace:*",

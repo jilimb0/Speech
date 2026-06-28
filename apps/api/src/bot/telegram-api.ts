@@ -1,4 +1,4 @@
-import { ApiClient } from '@jilimb0/tgwrapper';
+import { ApiClient } from '@tgwrapper/core';
 import { config } from '../config.js';
 
 /**

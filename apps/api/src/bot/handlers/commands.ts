@@ -1,4 +1,4 @@
-import type { BotClient, Message } from '@jilimb0/tgwrapper';
+import type { BotClient, Message } from '@tgwrapper/core';
 import { config } from '../../config.js';
 
 export async function handleStart(bot: BotClient, msg: Message): Promise<void> {

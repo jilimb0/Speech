@@ -1,11 +1,11 @@
 import { rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { BotClient, Message } from '@jilimb0/tgwrapper';
 import { analyzeFillers, calculateScore } from '@speech/analysis';
 import { countTodaySessions, createSession, getUserByTelegramId } from '@speech/sessions';
 import type { FillerAnalysisResult, ScoringResult } from '@speech/shared';
 import { FasterWhisperProvider, ManagedWhisperProvider, SpeechService } from '@speech/speech';
+import type { BotClient, Message } from '@tgwrapper/core';
 import { config } from '../../config.js';
 import { TELEGRAM_FILE_BASE, getApiClient } from '../telegram-api.js';
 
