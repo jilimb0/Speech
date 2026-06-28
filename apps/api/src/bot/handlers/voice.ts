@@ -150,29 +150,36 @@ export async function handleVoiceMessage(
 
     const analysis = analyzeFillers({
       normalizedTranscript: transcription.normalizedTranscript,
-      rawTranscript: transcription.rawTranscript,
-      durationSec,
+      audioDurationSec: durationSec,
     });
 
     const scoring = calculateScore({
-      fillersCount: analysis.totalFillers,
+      audioDurationSec: durationSec,
+      totalFillers: analysis.totalFillers,
+      fillersPerMinute: analysis.fillersPerMinute,
+      wordsPerMinute: analysis.wordsPerMinute,
       speechRate: analysis.speechRate,
-      durationSec,
-      confidence: transcription.status === 'uncertain' ? 0.5 : 1,
+      topFillers: analysis.topFillers,
+      repeatedWords: analysis.repeatedWords,
     });
 
     const session = user
       ? await createSession({
           userId: user.id,
-          transcript: transcription.rawTranscript,
+          audioDurationSec: durationSec,
+          rawTranscript: transcription.rawTranscript,
           normalizedTranscript: transcription.normalizedTranscript,
-          fillersCount: analysis.totalFillers,
-          topFillers: analysis.topFillers,
+          transcriptionStatus: transcription.status,
+          totalWords: analysis.totalWords,
+          totalFillers: analysis.totalFillers,
+          fillersPerMinute: analysis.fillersPerMinute,
+          wordsPerMinute: analysis.wordsPerMinute,
           speechRate: analysis.speechRate,
-          durationSec,
-          score: scoring.sessionScore,
-          feedback: scoring.advice,
-          transcriptStatus: transcription.status,
+          topFillers: analysis.topFillers,
+          repeatedWords: analysis.repeatedWords,
+          sessionScore: scoring.sessionScore,
+          summaryText: scoring.summaryText,
+          advice: scoring.advice,
         })
       : null;
 
