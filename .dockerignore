@@ -1,0 +1,14 @@
+node_modules
+.pnpm-store
+dist
+.git
+.gitignore
+*.md
+*.env
+.env*
+coverage
+.husky
+.vscode
+.cursor
+.plans
+opencode.jsonc

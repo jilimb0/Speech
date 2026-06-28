@@ -1,0 +1,32 @@
+app = "speech-api"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  HOST = "0.0.0.0"
+  FREE_DAILY_SESSION_LIMIT = "2"
+  MIN_AUDIO_DURATION_SEC = "15"
+  MAX_AUDIO_DURATION_SEC = "90"
+  SPEECH_PROVIDER = "managed"
+  CORS_ORIGIN = "https://jilimb0.github.io"
+  WEB_APP_URL = "https://jilimb0.github.io/Speech"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 3000
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.concurrency]]
+    type = "requests"
+    hard_limit = 50
+    soft_limit = 20
