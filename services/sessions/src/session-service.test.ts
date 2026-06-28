@@ -43,7 +43,7 @@ describe('createSession', () => {
       audioDurationSec: 30,
       rawTranscript: 'test',
       normalizedTranscript: 'test',
-      transcriptionStatus: 'completed' as const,
+      transcriptionStatus: 'ok' as const,
       totalWords: 100,
       totalFillers: 5,
       fillersPerMinute: 10,
@@ -95,7 +95,7 @@ describe('getSessionsByUserId', () => {
     ]);
     const sessions = await getSessionsByUserId('u1');
     expect(sessions).toHaveLength(1);
-    expect(sessions[0].id).toBe('s1');
+    expect(sessions[0]!.id).toBe('s1');
   });
 });
 
