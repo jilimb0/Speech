@@ -1,32 +1,44 @@
-app = "speech-api"
+# fly.toml app configuration file generated for speech-api-summer-sunset-5698 on 2026-06-29T16:41:36+04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'speech-api-summer-sunset-5698'
+primary_region = 'fra'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  PORT = "3000"
-  HOST = "0.0.0.0"
-  FREE_DAILY_SESSION_LIMIT = "2"
-  MIN_AUDIO_DURATION_SEC = "15"
-  MAX_AUDIO_DURATION_SEC = "90"
-  SPEECH_PROVIDER = "managed"
-  CORS_ORIGIN = "https://jilimb0.github.io"
-  WEB_APP_URL = "https://jilimb0.github.io/Speech"
+  CORS_ORIGIN = 'https://jilimb0.github.io'
+  FREE_DAILY_SESSION_LIMIT = '2'
+  HOST = '0.0.0.0'
+  MAX_AUDIO_DURATION_SEC = '90'
+  MIN_AUDIO_DURATION_SEC = '15'
+  PORT = '3000'
+  SPEECH_PROVIDER = 'managed'
+  WEB_APP_URL = 'https://jilimb0.github.io/Speech'
 
 [[services]]
-  protocol = "tcp"
+  protocol = 'tcp'
   internal_port = 3000
 
   [[services.ports]]
     port = 80
-    handlers = ["http"]
+    handlers = ['http']
     force_https = true
 
   [[services.ports]]
     port = 443
-    handlers = ["tls", "http"]
+    handlers = ['tls', 'http']
 
-  [[services.concurrency]]
-    type = "requests"
+  [services.concurrency]
+    type = 'requests'
     hard_limit = 50
     soft_limit = 20
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 1024
