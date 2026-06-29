@@ -19,10 +19,12 @@ services:
   api:
     build: .
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       DATABASE_URL: postgres://speech:${POSTGRES_PASSWORD:-speech_dev}@db:5432/speech
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      SPEECH_PROVIDER: faster-whisper
+      FASTER_WHISPER_URL: http://faster-whisper:10300
       WEB_APP_URL: ${WEB_APP_URL:-https://jilimb0.github.io/Speech}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://jilimb0.github.io}
       HOST: "0.0.0.0"
