@@ -18,6 +18,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec biome check .
+      - name: Build shared deps first
+        run: pnpm --filter @speech/shared build
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
