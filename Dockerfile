@@ -1,5 +1,5 @@
 FROM node:26-alpine AS builder
-RUN corepack enable && corepack prepare pnpm@11.0.9 --activate
+RUN npm install -g pnpm@11.0.9
 
 WORKDIR /app
 
@@ -23,11 +23,8 @@ RUN pnpm --filter @speech/analysis build
 RUN pnpm --filter @speech/sessions build
 RUN pnpm --filter @speech/speech build
 RUN pnpm --filter @speech/api build
-RUN pnpm prune --prod
 
 FROM node:26-alpine
-RUN corepack enable && corepack prepare pnpm@11.0.9 --activate
-
 WORKDIR /app
 
 COPY --from=builder /app/node_modules node_modules
