@@ -1,0 +1,30 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'apps/api/**'
+      - 'packages/shared/**'
+      - 'services/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/jilimbo/Documents/PersonalProjects/Speech
+            git pull origin master
+            docker compose up -d --build
+            docker system prune -f
