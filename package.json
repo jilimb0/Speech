@@ -9,7 +9,7 @@
     "lint": "pnpm exec biome check .",
     "lint:fix": "pnpm exec biome check --write .",
     "format": "pnpm exec biome format --write .",
-    "validate": "pnpm -r --filter @speech/shared --filter @speech/analysis --filter @speech/sessions --filter @speech/speech build && pnpm typecheck && pnpm lint",
+    "validate": "pnpm -r --filter @speech/shared --filter @speech/analysis --filter @speech/sessions --filter @speech/speech build && pnpm typecheck && pnpm exec biome check .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
