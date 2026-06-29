@@ -1,0 +1,13 @@
+{
+  "name": "Speech Analyzer",
+  "short_name": "Speech",
+  "description": "Analyze your speech for filler words and improve your speaking skills",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#34c759",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

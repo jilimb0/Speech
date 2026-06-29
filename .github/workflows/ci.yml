@@ -17,5 +17,8 @@ jobs:
           node-version: 26
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm validate
+      - run: pnpm exec biome check .
+      - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm build
+      - run: pnpm --filter @speech/web-miniapp test

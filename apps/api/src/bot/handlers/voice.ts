@@ -7,7 +7,7 @@ import type { FillerAnalysisResult, ScoringResult } from '@speech/shared';
 import { FasterWhisperProvider, ManagedWhisperProvider, SpeechService } from '@speech/speech';
 import type { BotClient, Message } from '@tgwrapper/core';
 import { config } from '../../config.js';
-import { TELEGRAM_FILE_BASE, getApiClient } from '../telegram-api.js';
+import { getApiClient, TELEGRAM_FILE_BASE } from '../telegram-api.js';
 
 export interface VoiceMessage {
   file_id: string;

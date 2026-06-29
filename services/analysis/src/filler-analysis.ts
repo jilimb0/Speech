@@ -1,6 +1,11 @@
-import type { FillerAnalysisInput, FillerAnalysisResult } from '@speech/shared';
-import type { FillerCount, RepeatedWord, SpeechRate } from '@speech/shared';
-import { ALL_FILLERS } from './filler-dictionary.js';
+import type {
+  FillerAnalysisInput,
+  FillerAnalysisResult,
+  FillerCount,
+  RepeatedWord,
+  SpeechRate,
+} from '@speech/shared';
+import { getFillers } from './filler-dictionary.js';
 
 const SLOW_WPM_THRESHOLD = 100;
 const FAST_WPM_THRESHOLD = 160;
@@ -59,9 +64,13 @@ function escapeRegex(str: string): string {
  * Считает вхождения fillers в тексте.
  * Многословные fillers матчатся первыми, чтобы избежать двойного подсчёта.
  */
-function countFillers(normalizedText: string, customFillers: string[] = []): Map<string, number> {
-  // custom fillers идут первыми, затем стандартные (multi перед single уже в ALL_FILLERS)
-  const fillers = [...customFillers, ...ALL_FILLERS];
+function countFillers(
+  normalizedText: string,
+  customFillers: string[] = [],
+  language: 'ru' | 'en' = 'ru',
+): Map<string, number> {
+  const dict = getFillers(language);
+  const fillers = [...customFillers, ...dict];
   const counts = new Map<string, number>();
 
   let workingText = normalizedText;
@@ -102,7 +111,7 @@ function findRepeatedWords(tokens: string[], fillerSet: Set<string>): RepeatedWo
  * Основная функция анализа fillers.
  */
 export function analyzeFillers(input: FillerAnalysisInput): FillerAnalysisResult {
-  const { normalizedTranscript, audioDurationSec, customFillers = [] } = input;
+  const { normalizedTranscript, audioDurationSec, customFillers = [], language = 'ru' } = input;
 
   const normalized = normalizeText(normalizedTranscript);
   const tokens = tokenize(normalized);
@@ -112,7 +121,7 @@ export function analyzeFillers(input: FillerAnalysisInput): FillerAnalysisResult
   const wordsPerMinute = durationMinutes > 0 ? Math.round(totalWords / durationMinutes) : 0;
   const speechRate = classifySpeechRate(wordsPerMinute);
 
-  const fillerCounts = countFillers(normalized, customFillers);
+  const fillerCounts = countFillers(normalized, customFillers, language);
 
   let totalFillers = 0;
   const topFillers: FillerCount[] = [];
@@ -129,9 +138,8 @@ export function analyzeFillers(input: FillerAnalysisInput): FillerAnalysisResult
     durationMinutes > 0 ? Math.round((totalFillers / durationMinutes) * 10) / 10 : 0;
 
   // Для repeated words используем все filler-слова как стоп-список
-  const fillerTokenSet = new Set<string>(
-    [...ALL_FILLERS, ...customFillers].flatMap((f) => f.split(' ')),
-  );
+  const dict = getFillers(language);
+  const fillerTokenSet = new Set<string>([...dict, ...customFillers].flatMap((f) => f.split(' ')));
   const repeatedWords = findRepeatedWords(tokens, fillerTokenSet);
 
   return {

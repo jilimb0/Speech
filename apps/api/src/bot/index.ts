@@ -1,5 +1,5 @@
-import { createBotClient } from '@tgwrapper/core';
 import type { BotClient } from '@tgwrapper/core';
+import { createBotClient } from '@tgwrapper/core';
 import { config } from '../config.js';
 import { registerCallbackRouter } from './routers/callback-router.js';
 import { registerMessageRouter } from './routers/message-router.js';

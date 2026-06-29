@@ -8,6 +8,7 @@ export interface RepeatedWord {
   count: number;
 }
 
+export type Language = 'ru' | 'en';
 export type SpeechRate = 'slow' | 'moderate' | 'fast';
 
 export type TranscriptionStatus = 'ok' | 'uncertain' | 'failed';

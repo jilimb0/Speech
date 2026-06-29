@@ -1,9 +1,10 @@
-import type { FillerCount, RepeatedWord, SpeechRate } from './session.js';
+import type { FillerCount, Language, RepeatedWord, SpeechRate } from './session.js';
 
 export interface FillerAnalysisInput {
   normalizedTranscript: string;
   audioDurationSec: number;
   customFillers?: string[];
+  language?: Language;
 }
 
 export interface FillerAnalysisResult {

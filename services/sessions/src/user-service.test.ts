@@ -29,7 +29,7 @@ describe('getUserByTelegramId', () => {
     ]);
     const user = await getUserByTelegramId(12345);
     expect(user).not.toBeNull();
-    expect(user!.telegramUserId).toBe(12345);
+    expect(user?.telegramUserId).toBe(12345);
   });
 });
 

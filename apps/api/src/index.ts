@@ -1,11 +1,25 @@
 import cors from '@fastify/cors';
+import * as Sentry from '@sentry/node';
 import Fastify from 'fastify';
 import { createBot } from './bot/index.js';
 import { config } from './config.js';
 import { sessionRoutes } from './routes/sessions.js';
 
+const sentryDsn = process.env.SENTRY_DSN;
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    environment: process.env.NODE_ENV ?? 'development',
+    tracesSampleRate: 0.1,
+  });
+}
+
 const logger = Fastify({
   logger: { level: process.env.LOG_LEVEL ?? 'info' },
+});
+
+process.on('unhandledRejection', (reason) => {
+  Sentry.captureException(reason);
 });
 
 await logger.register(cors, {

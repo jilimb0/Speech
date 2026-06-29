@@ -2,7 +2,15 @@ packages:
   - 'apps/*'
   - 'services/*'
   - 'packages/*'
+onlyBuiltDependencies:
+  - '@biomejs/biome'
+  - esbuild
+  - '@tgwrapper/core'
 allowBuilds:
   '@biomejs/biome': true
   esbuild: true
   '@tgwrapper/core': true
+allowedDeprecatedVersions:
+  - '@tgwrapper/core@>=0.16.3'
+minimumReleaseAgeExclude:
+  - '@tgwrapper/core@0.18.0'

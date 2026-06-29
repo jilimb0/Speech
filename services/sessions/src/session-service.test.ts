@@ -62,7 +62,9 @@ describe('createSession', () => {
 
   it('throws on empty result', async () => {
     mockSql.mockResolvedValueOnce([]);
-    await expect(createSession({} as any)).rejects.toThrow('Failed to create session');
+    await expect(
+      createSession({} as unknown as import('@speech/shared').CreateSessionInput),
+    ).rejects.toThrow('Failed to create session');
   });
 });
 
@@ -71,7 +73,7 @@ describe('getSessionById', () => {
     mockSql.mockResolvedValueOnce([mockRow]);
     const session = await getSessionById('s1');
     expect(session).not.toBeNull();
-    expect(session!.id).toBe('s1');
+    expect(session?.id).toBe('s1');
   });
 
   it('returns null when not found', async () => {
@@ -95,7 +97,7 @@ describe('getSessionsByUserId', () => {
     ]);
     const sessions = await getSessionsByUserId('u1');
     expect(sessions).toHaveLength(1);
-    expect(sessions[0]!.id).toBe('s1');
+    expect(sessions[0]?.id).toBe('s1');
   });
 });
 

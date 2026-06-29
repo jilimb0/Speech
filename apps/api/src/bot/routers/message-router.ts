@@ -1,7 +1,7 @@
 import { upsertUser } from '@speech/sessions';
 import type { BotClient, Message } from '@tgwrapper/core';
 import { handleHelp, handleHistory, handleStart } from '../handlers/commands.js';
-import { type VoiceMessage, handleVoiceMessage } from '../handlers/voice.js';
+import { handleVoiceMessage, type VoiceMessage } from '../handlers/voice.js';
 
 function getText(msg: Message): string | null {
   const t = msg.text;

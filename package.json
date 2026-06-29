@@ -1,14 +1,14 @@
 {
   "name": "speech-root",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@11.0.9",
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
+    "lint": "pnpm exec biome check .",
+    "lint:fix": "pnpm exec biome check --write .",
+    "format": "pnpm exec biome format --write .",
     "validate": "pnpm -r --filter @speech/shared --filter @speech/analysis --filter @speech/sessions --filter @speech/speech build && pnpm typecheck && pnpm lint",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -17,18 +17,19 @@
     "build:web": "pnpm --filter @speech/shared build && pnpm --filter @speech/web-miniapp build"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/node": "^22.0.0",
+    "@biomejs/biome": "^2.5.1",
+    "@types/node": "^22.15.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
-    "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": ["biome check --write --no-errors-on-unmatched"],
-    "*.{json,css,md}": ["biome format --write --no-errors-on-unmatched"]
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+    "*.{ts,tsx,js,jsx}": [
+      "biome check --write --no-errors-on-unmatched"
+    ],
+    "*.{json,css,md}": [
+      "biome format --write --no-errors-on-unmatched"
+    ]
   }
 }

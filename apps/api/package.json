@@ -1,6 +1,6 @@
 {
   "name": "@speech/api",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -12,13 +12,13 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@tgwrapper/core": "github:jilimb0/TGWrapper#main",
+    "@fastify/cors": "^10.0.2",
+    "@sentry/node": "^10.62.0",
     "@speech/analysis": "workspace:*",
     "@speech/sessions": "workspace:*",
     "@speech/shared": "workspace:*",
     "@speech/speech": "workspace:*",
-    "@fastify/cors": "^10.0.2",
+    "@tgwrapper/core": "^0.18.0",
     "fastify": "^5.2.1"
-  },
-  "devDependencies": {}
+  }
 }
