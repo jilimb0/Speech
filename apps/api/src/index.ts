@@ -48,8 +48,7 @@ const staticDir = '/app/web-miniapp';
 if (existsSync(staticDir)) {
   await logger.register(fastifyStatic, {
     root: staticDir,
-    prefix: '/',
-    wildcard: false,
+    wildcard: true,
   });
   logger.setNotFoundHandler(async (_request, reply) => {
     return reply.sendFile('index.html');
