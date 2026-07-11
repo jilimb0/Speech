@@ -18,10 +18,13 @@ export function DebugScreen() {
     }
   }, [initData]);
 
-  const urlParams =
-    typeof window !== 'undefined'
-      ? Object.fromEntries(new URLSearchParams(window.location.search).entries())
-      : {};
+  const w = typeof window !== 'undefined' ? window : null;
+  const bridges = {
+    wk: !!(w as any)?.webkit?.messageHandlers?.TelegramWebviewProxy,
+    android: !!(w as any)?.TelegramWebviewProxy,
+    tgScript: !!(w as any)?.Telegram,
+    tgApp: !!(w as any)?.Telegram?.WebApp,
+  };
 
   return (
     <div style={{ padding: 16, fontFamily: 'monospace', fontSize: 13 }}>
@@ -29,12 +32,12 @@ export function DebugScreen() {
       <pre>
         {JSON.stringify(
           {
-            hasTg: !!tg,
+            bridges,
             tgVersion: tg?.version ?? '(none)',
             tgPlatform: tg?.platform ?? '(none)',
             initData: initData ? `${initData.slice(0, 60)}...` : '(empty)',
-            url: typeof window !== 'undefined' ? window.location.href : '(ssr)',
-            urlParams,
+            url: window.location.href,
+            params: Object.fromEntries(new URLSearchParams(window.location.search).entries()),
             user,
             apiResult,
           },
@@ -42,6 +45,9 @@ export function DebugScreen() {
           2,
         )}
       </pre>
+      <p style={{ fontSize: 11, color: '#999' }}>
+        wk=iOS bridge · android=Android bridge · tgScript=window.Telegram · tgApp=WebApp object
+      </p>
     </div>
   );
 }
