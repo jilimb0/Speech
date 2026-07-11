@@ -14,9 +14,14 @@ export function DebugScreen() {
         (e) => setApiResult(`Error: ${e.message}`),
       );
     } else {
-      setApiResult('No initData — outside Telegram WebView');
+      setApiResult('No initData from Telegram.WebApp');
     }
   }, [initData]);
+
+  const urlParams =
+    typeof window !== 'undefined'
+      ? Object.fromEntries(new URLSearchParams(window.location.search).entries())
+      : {};
 
   return (
     <div style={{ padding: 16, fontFamily: 'monospace', fontSize: 13 }}>
@@ -25,8 +30,11 @@ export function DebugScreen() {
         {JSON.stringify(
           {
             hasTg: !!tg,
+            tgVersion: tg?.version ?? '(none)',
+            tgPlatform: tg?.platform ?? '(none)',
             initData: initData ? `${initData.slice(0, 60)}...` : '(empty)',
             url: typeof window !== 'undefined' ? window.location.href : '(ssr)',
+            urlParams,
             user,
             apiResult,
           },
