@@ -55,10 +55,12 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       SPEECH_PROVIDER: faster-whisper
       FASTER_WHISPER_URL: http://http-bridge:8000
-      WEB_APP_URL: ${WEB_APP_URL:-https://jilimb0.github.io/Speech/}
+      WEB_APP_URL: ${WEB_APP_URL:-https://raspberrypi.tailda440c.ts.net/}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://jilimb0.github.io}
       HOST: "0.0.0.0"
       PORT: "3000"
+    volumes:
+      - /home/jilimb0/speech-web-dist:/app/web-miniapp:ro
     depends_on:
       db:
         condition: service_healthy

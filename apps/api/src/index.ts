@@ -1,4 +1,6 @@
+import { existsSync } from 'node:fs';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
 import * as Sentry from '@sentry/node';
 import Fastify from 'fastify';
 import { createBot } from './bot/index.js';
@@ -40,6 +42,20 @@ logger.get('/debug', async (request) => ({
   initDataLength: String(request.headers['x-telegram-init-data'] ?? '').length,
   userAgent: request.headers['user-agent'] ?? '(unknown)',
 }));
+
+// Serve web-miniapp static files
+const staticDir = '/app/web-miniapp';
+if (existsSync(staticDir)) {
+  await logger.register(fastifyStatic, {
+    root: staticDir,
+    prefix: '/',
+    wildcard: false,
+  });
+  logger.setNotFoundHandler(async (_request, reply) => {
+    return reply.sendFile('index.html');
+  });
+  logger.log.info(`Serving static files from ${staticDir}`);
+}
 
 // Start Telegram bot (polling)
 await createBot();
