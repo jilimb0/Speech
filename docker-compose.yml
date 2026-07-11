@@ -55,7 +55,7 @@ services:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       SPEECH_PROVIDER: faster-whisper
       FASTER_WHISPER_URL: http://http-bridge:8000
-      WEB_APP_URL: ${WEB_APP_URL:-https://raspberrypi.tailda440c.ts.net/}
+      WEB_APP_URL: ${WEB_APP_URL:-https://t.me/clean_speech_bot/CleanSpeech}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://jilimb0.github.io}
       HOST: "0.0.0.0"
       PORT: "3000"
