@@ -68,6 +68,14 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
   // Auth hook — validate Telegram initData on every request
   app.addHook('preHandler', async (request, reply) => {
     const initData = request.headers['x-telegram-init-data'];
+    const testMode = process.env.TEST_MODE === 'true';
+
+    if (testMode && initData === 'test') {
+      // Dev mode: fake user
+      request.telegramUserId = 387147568;
+      return;
+    }
+
     if (!initData || typeof initData !== 'string') {
       return reply.code(401).send({ ok: false, error: 'Missing initData' });
     }
