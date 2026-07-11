@@ -35,6 +35,12 @@ await logger.register(sessionRoutes);
 
 logger.get('/health', async () => ({ ok: true, ts: new Date().toISOString() }));
 
+logger.get('/debug', async (request) => ({
+  initDataHeader: request.headers['x-telegram-init-data'] ?? '(empty)',
+  initDataLength: String(request.headers['x-telegram-init-data'] ?? '').length,
+  userAgent: request.headers['user-agent'] ?? '(unknown)',
+}));
+
 // Start Telegram bot (polling)
 await createBot();
 logger.log.info('Telegram bot started (polling)');
