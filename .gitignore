@@ -29,6 +29,10 @@ Thumbs.db
 # Coverage
 coverage/
 
+# Data (models, cache)
+data/
+
 # Temp
 tmp/
 temp/
+data/
