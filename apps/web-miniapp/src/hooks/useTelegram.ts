@@ -11,6 +11,8 @@ interface TelegramThemeParams {
 }
 
 interface TelegramWebApp {
+  version: string;
+  platform: string;
   initData: string;
   initDataUnsafe: {
     user?: {
