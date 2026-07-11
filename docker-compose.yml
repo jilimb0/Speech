@@ -16,6 +16,36 @@ services:
       timeout: 3s
       retries: 5
 
+  faster-whisper:
+    image: lscr.io/linuxserver/faster-whisper:latest
+    ports:
+      - "8001:10300"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Tbilisi
+      - WHISPER_MODEL=small
+      - WHISPER_LANG=ru
+      - WHISPER_BEAM=3
+      - WHISPER_COMPUTE_TYPE=int8
+    volumes:
+      - whisper-data:/config
+      - audio-tmp:/audio-tmp
+    restart: unless-stopped
+
+  http-bridge:
+    build: services/http-bridge
+    ports:
+      - "8002:8000"
+    environment:
+      WHISPER_HOST: faster-whisper
+      WHISPER_PORT: 10300
+    volumes:
+      - audio-tmp:/audio-tmp
+    depends_on:
+      faster-whisper:
+        condition: service_started
+
   api:
     build: .
     ports:
@@ -24,7 +54,7 @@ services:
       DATABASE_URL: postgres://speech:${POSTGRES_PASSWORD:-speech_dev}@db:5432/speech
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       SPEECH_PROVIDER: faster-whisper
-      FASTER_WHISPER_URL: http://faster-whisper:10300
+      FASTER_WHISPER_URL: http://http-bridge:8000
       WEB_APP_URL: ${WEB_APP_URL:-https://jilimb0.github.io/Speech}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://jilimb0.github.io}
       HOST: "0.0.0.0"
@@ -32,6 +62,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      http-bridge:
+        condition: service_started
 
 volumes:
   pgdata:
+  whisper-data:
+  audio-tmp:

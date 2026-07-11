@@ -1,10 +1,7 @@
+import { createReadStream } from 'node:fs';
 import { requireEnv } from '@speech/shared';
 import type { SpeechRecognitionProvider, TranscriptionResult } from '../speech-service.js';
 
-/**
- * Провайдер транскрипции через локальный faster-whisper Python microservice.
- * Используется на следующем этапе для снижения стоимости и latency.
- */
 export class FasterWhisperProvider implements SpeechRecognitionProvider {
   private readonly serviceUrl: string;
 
@@ -15,10 +12,20 @@ export class FasterWhisperProvider implements SpeechRecognitionProvider {
   async transcribe(audioFilePath: string): Promise<TranscriptionResult> {
     const startTime = Date.now();
 
+    const chunks: Buffer[] = [];
+    for await (const chunk of createReadStream(audioFilePath)) {
+      chunks.push(chunk as Buffer);
+    }
+    const buffer = Buffer.concat(chunks);
+    const blob = new Blob([buffer], { type: 'audio/ogg' });
+
+    const formData = new FormData();
+    formData.append('file', blob, 'audio.ogg');
+    formData.append('language', 'ru');
+
     const response = await fetch(`${this.serviceUrl}/transcribe`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file_path: audioFilePath, language: 'ru' }),
+      body: formData,
     });
 
     if (!response.ok) {

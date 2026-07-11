@@ -17,11 +17,11 @@ export interface VoiceMessage {
 }
 
 interface GetFileResult {
-  result: { file_path?: string };
+  file_path?: string;
 }
 
 interface SendMessageResult {
-  result: { message_id: number };
+  message_id: number;
 }
 
 const speechProvider =
@@ -64,7 +64,7 @@ function buildReport(
 async function downloadVoice(fileId: string): Promise<string> {
   const api = getApiClient();
   const fileInfo = (await api.callApiUnsafe('getFile', { file_id: fileId })) as GetFileResult;
-  const filePath = fileInfo.result?.file_path;
+  const filePath = fileInfo.file_path;
   if (!filePath) throw new Error('No file_path from Telegram API');
 
   const fileUrl = `${TELEGRAM_FILE_BASE}/${filePath}`;
@@ -130,7 +130,7 @@ export async function handleVoiceMessage(
     chat_id: chatId,
     text: 'Слушаю запись и ищу слова-паразиты, повторы и общий темп речи…',
   })) as SendMessageResult;
-  const statusMessageId = statusResult.result.message_id;
+  const statusMessageId = statusResult.message_id;
 
   let tempFilePath: string | null = null;
 
