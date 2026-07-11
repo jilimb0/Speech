@@ -1,0 +1,48 @@
+name: Deploy to Pi — check
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'apps/api/**'
+      - 'packages/shared/**'
+      - 'services/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/deploy-pi-check.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  wait-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for Pi cron to deploy
+        run: sleep 180
+
+      - name: Get current commit SHA
+        id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Verify Pi is running latest commit
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL || secrets.API_BASE_URL }}
+        run: |
+          MAX_RETRIES=8
+          DELAY=45
+          for i in $(seq 1 $MAX_RETRIES); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${API_BASE_URL:-https://raspberrypi.tailda440c.ts.net}/health" 2>/dev/null || echo "000")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Pi API is responding (attempt $i)"
+              exit 0
+            fi
+            echo "⏳ Waiting for Pi... (attempt $i/$MAX_RETRIES, got $STATUS)"
+            sleep $DELAY
+          done
+          echo "❌ Pi API not responding after $((MAX_RETRIES * DELAY))s"
+          exit 1
