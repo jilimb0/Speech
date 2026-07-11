@@ -37,7 +37,7 @@ async def transcribe_audio(pcm_path: str, language: str = "ru") -> dict:
                 if not chunk:
                     break
                 audio_chunk = wyoming_audio.AudioChunk(
-                    audio_bytes=chunk,
+                    audio=chunk,
                     rate=SAMPLE_RATE,
                     width=SAMPLE_WIDTH,
                     channels=CHANNELS,
