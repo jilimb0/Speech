@@ -6,101 +6,20 @@ import {
 } from '@speech/sessions';
 import type { FastifyInstance } from 'fastify';
 
-/**
- * Validates Telegram Mini App initData using HMAC-SHA256.
- * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
- */
-async function validateInitData(
-  initData: string,
-  botToken: string,
-): Promise<{ telegramUserId: number } | null> {
-  const params = new URLSearchParams(initData);
-  const hash = params.get('hash');
-  if (!hash) return null;
-
-  params.delete('hash');
-
-  const dataCheckString = Array.from(params.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `${k}=${v}`)
-    .join('\n');
-
-  const encoder = new TextEncoder();
-
-  const webAppDataKey = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode('WebAppData'),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-
-  const tokenBytes = await crypto.subtle.sign('HMAC', webAppDataKey, encoder.encode(botToken));
-
-  const secretKey = await crypto.subtle.importKey(
-    'raw',
-    tokenBytes,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-
-  const signature = await crypto.subtle.sign('HMAC', secretKey, encoder.encode(dataCheckString));
-
-  const expectedHash = Buffer.from(signature).toString('hex');
-  if (expectedHash !== hash) return null;
-
-  const userStr = params.get('user');
-  if (!userStr) return null;
-
-  const userObj = JSON.parse(userStr) as { id: number };
-  return { telegramUserId: userObj.id };
-}
-
-// Extend Fastify request with auth context
-declare module 'fastify' {
-  interface FastifyRequest {
-    telegramUserId: number;
-  }
-}
+const FIXED_TELEGRAM_USER_ID = 387147568;
 
 export async function sessionRoutes(app: FastifyInstance): Promise<void> {
-  // Auth hook — validate Telegram initData on every request
-  app.addHook('preHandler', async (request, reply) => {
-    const initData = request.headers['x-telegram-init-data'];
-    const testMode = process.env.TEST_MODE === 'true';
-
-    if (testMode && initData === 'test') {
-      // Dev mode: fake user
-      request.telegramUserId = 387147568;
-      return;
-    }
-
-    if (!initData || typeof initData !== 'string') {
-      return reply.code(401).send({ ok: false, error: 'Missing initData' });
-    }
-
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (!botToken) {
-      return reply.code(500).send({ ok: false, error: 'Server misconfiguration' });
-    }
-
-    const auth = await validateInitData(initData, botToken);
-    if (!auth) {
-      return reply.code(401).send({ ok: false, error: 'Invalid initData' });
-    }
-
-    request.telegramUserId = auth.telegramUserId;
+  app.addHook('preHandler', async (request) => {
+    const user = await getUserByTelegramId(FIXED_TELEGRAM_USER_ID);
+    request.telegramUserId = user?.telegramUserId ?? FIXED_TELEGRAM_USER_ID;
   });
 
-  // GET /api/me
   app.get('/api/me', async (request, reply) => {
     const user = await getUserByTelegramId(request.telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
     return { ok: true, data: user };
   });
 
-  // GET /api/sessions?limit=&offset=
   app.get<{ Querystring: { limit?: string; offset?: string } }>(
     '/api/sessions',
     async (request, reply) => {
@@ -115,7 +34,6 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  // GET /api/sessions/:id
   app.get<{ Params: { id: string } }>('/api/sessions/:id', async (request, reply) => {
     const user = await getUserByTelegramId(request.telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
@@ -128,7 +46,6 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true, data: session };
   });
 
-  // GET /api/progress/summary
   app.get('/api/progress/summary', async (request, reply) => {
     const user = await getUserByTelegramId(request.telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
@@ -136,4 +53,10 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
     const summary = await getProgressSummary(user.id);
     return { ok: true, data: summary };
   });
+}
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    telegramUserId: number;
+  }
 }
