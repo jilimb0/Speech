@@ -26,6 +26,7 @@ export function DebugScreen() {
           {
             hasTg: !!tg,
             initData: initData ? `${initData.slice(0, 60)}...` : '(empty)',
+            url: typeof window !== 'undefined' ? window.location.href : '(ssr)',
             user,
             apiResult,
           },
