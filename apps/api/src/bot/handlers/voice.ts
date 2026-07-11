@@ -113,7 +113,11 @@ export async function handleVoiceMessage(
 
   const user = telegramUserId ? await getUserByTelegramId(telegramUserId) : null;
 
-  if (user && user.plan === 'free' && (await countTodaySessions(user.id)) >= config.freeDailySessionLimit) {
+  if (
+    user &&
+    user.plan === 'free' &&
+    (await countTodaySessions(user.id)) >= config.freeDailySessionLimit
+  ) {
     await bot.sendMessage(
       chatId,
       `На бесплатном плане доступно ${config.freeDailySessionLimit} сессии в день. Возвращайся завтра или открой историю, чтобы узнать о premium.`,
