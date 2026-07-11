@@ -26,6 +26,11 @@ await logger.register(cors, {
   origin: process.env.CORS_ORIGIN ?? false,
 });
 
+// Private Network Access: allow public→Tailscale requests
+logger.addHook('onSend', async (_request, reply) => {
+  void reply.header('Access-Control-Allow-Private-Network', 'true');
+});
+
 await logger.register(sessionRoutes);
 
 logger.get('/health', async () => ({ ok: true, ts: new Date().toISOString() }));

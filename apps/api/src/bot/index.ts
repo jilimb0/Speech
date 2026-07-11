@@ -19,5 +19,8 @@ export async function createBot(): Promise<BotClient> {
   registerMessageRouter(bot);
   registerCallbackRouter(bot);
 
+  bot.start().catch((error) => {
+    console.error('Bot polling failed:', error);
+  });
   return bot;
 }

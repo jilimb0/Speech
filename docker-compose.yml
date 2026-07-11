@@ -19,7 +19,7 @@ services:
   api:
     build: .
     ports:
-      - "3005:3000"
+      - "3006:3000"
     environment:
       DATABASE_URL: postgres://speech:${POSTGRES_PASSWORD:-speech_dev}@db:5432/speech
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
