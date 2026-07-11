@@ -11,7 +11,7 @@ export function App() {
   const { initData } = useTelegram();
 
   useEffect(() => {
-    if (initData) setInitData(initData);
+    setInitData(initData);
   }, [initData]);
 
   return (
