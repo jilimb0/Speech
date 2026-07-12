@@ -3,7 +3,7 @@ import type { ApiResult, ProgressSummary, Session, SessionListItem, User } from 
 let _initData = '';
 
 export function setInitData(initData: string): void {
-  _initData = initData;
+  _initData = initData || 'dev';
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
@@ -12,7 +12,6 @@ async function apiFetch<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: {
       'x-telegram-init-data': _initData,
-      'Content-Type': 'application/json',
     },
   });
 

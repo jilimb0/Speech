@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/node';
 import Fastify from 'fastify';
 import { createBot } from './bot/index.js';
 import { config } from './config.js';
+import { registerTmaAuth } from './middleware/tma-auth.js';
 import { sessionRoutes } from './routes/sessions.js';
 
 const sentryDsn = process.env.SENTRY_DSN;
@@ -33,6 +34,7 @@ logger.addHook('onSend', async (_request, reply) => {
   void reply.header('Access-Control-Allow-Private-Network', 'true');
 });
 
+await registerTmaAuth(logger);
 await logger.register(sessionRoutes);
 
 logger.get('/health', async () => ({ ok: true, ts: new Date().toISOString() }));
