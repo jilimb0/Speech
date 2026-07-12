@@ -22,6 +22,11 @@ interface SessionRow {
   created_at: Date;
 }
 
+function parseJson<T>(val: unknown): T {
+  if (typeof val === 'string') return JSON.parse(val) as T;
+  return val as T;
+}
+
 function rowToSession(row: SessionRow): Session {
   return {
     id: row.id,
@@ -36,8 +41,8 @@ function rowToSession(row: SessionRow): Session {
     fillersPerMinute: row.fillers_per_minute,
     wordsPerMinute: row.words_per_minute,
     speechRate: row.speech_rate as Session['speechRate'],
-    topFillers: row.top_fillers_json as Session['topFillers'],
-    repeatedWords: row.repeated_words_json as Session['repeatedWords'],
+    topFillers: parseJson<Session['topFillers']>(row.top_fillers_json),
+    repeatedWords: parseJson<Session['repeatedWords']>(row.repeated_words_json),
     sessionScore: row.session_score,
     summaryText: row.summary_text,
     advice: row.advice,
