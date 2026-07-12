@@ -83,6 +83,9 @@ async function deleteStatusMessage(chatId: number, messageId: number): Promise<v
     .catch(() => {});
 }
 
+const processingChats = new Map<number, number>();
+const RATE_LIMIT_COOLDOWN_MS = 15_000;
+
 export async function handleVoiceMessage(
   bot: BotClient,
   msg: Message,
@@ -94,6 +97,15 @@ export async function handleVoiceMessage(
 
   const fromUser = msg.from as { id?: number } | undefined;
   const telegramUserId = fromUser?.id;
+
+  // Rate limit: one voice message per chatId at a time
+  const now = Date.now();
+  const lastProcessing = processingChats.get(chatId);
+  if (lastProcessing && now - lastProcessing < RATE_LIMIT_COOLDOWN_MS) {
+    await bot.sendMessage(chatId, 'Предыдущее сообщение ещё обрабатывается. Подожди немного.');
+    return;
+  }
+  processingChats.set(chatId, now);
 
   if (durationSec < config.minAudioDurationSec) {
     await bot.sendMessage(
@@ -209,6 +221,7 @@ export async function handleVoiceMessage(
     await bot.sendMessage(chatId, 'Ошибка при обработке записи. Попробуй ещё раз чуть позже.');
     console.error('Voice processing failed:', error);
   } finally {
+    processingChats.delete(chatId);
     if (tempFilePath) {
       await rm(tempFilePath, { force: true }).catch(() => {});
     }
