@@ -18,5 +18,8 @@
   },
   "dependencies": {
     "@speech/shared": "workspace:*"
+  },
+  "engines": {
+    "node": ">=26.0.0"
   }
 }

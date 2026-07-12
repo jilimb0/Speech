@@ -31,5 +31,8 @@
     "*.{json,css,md}": [
       "biome format --write --no-errors-on-unmatched"
     ]
+  },
+  "engines": {
+    "node": ">=26.0.0"
   }
 }
