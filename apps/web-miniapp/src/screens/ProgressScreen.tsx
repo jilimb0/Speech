@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { BackButton } from '../components/BackButton.js';
 import { PageHeader } from '../components/PageHeader.js';
+import { useTranslation } from '../i18n/index.js';
 
 interface StatCardProps {
   value: string | number;
@@ -27,6 +28,7 @@ function StatCard({ value, label, valueColor }: StatCardProps) {
 }
 
 function ProgressGrid({ progress }: { progress: ProgressSummary }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const deltaColor =
@@ -44,27 +46,25 @@ function ProgressGrid({ progress }: { progress: ProgressSummary }) {
   return (
     <>
       <div className="p-4 grid grid-cols-2 gap-2.5">
-        <StatCard value={progress.avgScore7d ?? '—'} label="Средний score за 7 дней" />
-        <StatCard value={progress.bestScore ?? '—'} label="Лучший результат" />
+        <StatCard value={progress.avgScore7d ?? '—'} label={t.progress.avgScore7d} />
+        <StatCard value={progress.bestScore ?? '—'} label={t.progress.bestScore} />
         <StatCard
           value={progress.avgFillersPerMinute7d ?? '—'}
-          label="Паразитов в минуту (7 дней)"
+          label={t.progress.fillersPerMin7d}
         />
-        <StatCard value={progress.totalSessions} label="Всего сессий" />
-        <StatCard value={deltaValue} label="Изменение к прошлой сессии" valueColor={deltaColor} />
+        <StatCard value={progress.totalSessions} label={t.progress.totalSessions} />
+        <StatCard value={deltaValue} label={t.progress.delta} valueColor={deltaColor} />
       </div>
 
       <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
       {progress.totalSessions === 0 ? (
         <div className="p-6 text-center">
-          <Text className="text-[var(--tg-theme-hint-color)] text-sm">
-            Данных пока нет. Сделай первую запись в боте.
-          </Text>
+          <Text className="text-[var(--tg-theme-hint-color)] text-sm">{t.progress.empty}</Text>
         </div>
       ) : (
         <div className="p-4">
           <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
-            Посмотреть историю сессий
+            {t.progress.viewHistory}
           </Button>
         </div>
       )}

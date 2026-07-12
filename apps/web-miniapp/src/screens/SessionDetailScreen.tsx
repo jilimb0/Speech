@@ -6,12 +6,7 @@ import { api } from '../api/client.js';
 import { BackButton } from '../components/BackButton.js';
 import { PageHeader } from '../components/PageHeader.js';
 import { ScoreRing } from '../components/ScoreRing.js';
-
-const RATE_LABELS: Record<string, string> = {
-  slow: 'Медленный 🐢',
-  moderate: 'Умеренный ✅',
-  fast: 'Быстрый ⚡',
-};
+import { useTranslation } from '../i18n/index.js';
 
 function MetricCard({ value, label }: { value: string | number; label: string }) {
   return (
@@ -23,6 +18,7 @@ function MetricCard({ value, label }: { value: string | number; label: string })
 }
 
 export function SessionDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,14 +29,20 @@ export function SessionDetailScreen() {
     api
       .getSession(id)
       .then(setSession)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Ошибка загрузки'))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : t.session.loadError))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, t.session.loadError]);
+
+  const rateLabels: Record<string, string> = {
+    slow: t.session.slow,
+    moderate: t.session.moderate,
+    fast: t.session.fast,
+  };
 
   if (loading) {
     return (
       <div className="min-h-dvh">
-        <PageHeader title="Сессия" left={<BackButton />} />
+        <PageHeader title={t.session.title} left={<BackButton />} />
         <div className="p-4 flex flex-col gap-4">
           <Skeleton className="h-36 w-full rounded-2xl" />
           <Skeleton className="h-24 w-full rounded-2xl" />
@@ -53,9 +55,9 @@ export function SessionDetailScreen() {
   if (error || !session) {
     return (
       <div className="min-h-dvh">
-        <PageHeader title="Сессия" left={<BackButton />} />
+        <PageHeader title={t.session.title} left={<BackButton />} />
         <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-4 text-center">
-          <Text className="text-[#ff3b30]">{error ?? 'Сессия не найдена'}</Text>
+          <Text className="text-[#ff3b30]">{error ?? t.session.notFound}</Text>
         </div>
       </div>
     );
@@ -68,35 +70,35 @@ export function SessionDetailScreen() {
 
   return (
     <div className="min-h-dvh pb-10">
-      <PageHeader title="Сессия" left={<BackButton />} />
+      <PageHeader title={t.session.title} left={<BackButton />} />
 
-      {/* Score block */}
       <div className="flex flex-col items-center py-8 gap-2">
         <ScoreRing score={session.sessionScore} size={128} />
       </div>
 
       <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
-      {/* Metrics grid */}
       <section className="p-4">
         <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
-          Метрики
+          {t.session.metrics}
         </Text>
         <div className="grid grid-cols-2 gap-2.5">
-          <MetricCard value={session.totalFillers} label="Слов-паразитов" />
-          <MetricCard value={`${session.fillersPerMinute}/мин`} label="Паразитов в минуту" />
-          <MetricCard value={`${session.wordsPerMinute}`} label="Слов в минуту" />
-          <MetricCard value={RATE_LABELS[session.speechRate] ?? 'умеренный'} label="Темп речи" />
+          <MetricCard value={session.totalFillers} label={t.session.fillersTotal} />
+          <MetricCard value={`${session.fillersPerMinute}/мин`} label={t.session.fillersPerMin} />
+          <MetricCard value={`${session.wordsPerMinute}`} label={t.session.wordsPerMin} />
+          <MetricCard
+            value={rateLabels[session.speechRate] ?? t.session.moderate}
+            label={t.session.speechRate}
+          />
         </div>
       </section>
 
       <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
-      {/* Top fillers */}
       {session.topFillers.length > 0 && (
         <section className="p-4">
           <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
-            Топ паразитов
+            {t.session.topFillers}
           </Text>
           <div className="flex flex-col gap-2">
             {session.topFillers.map((f) => (
@@ -105,20 +107,21 @@ export function SessionDetailScreen() {
                 className="flex items-center justify-between px-3 py-2.5 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl"
               >
                 <Text className="font-medium">«{f.filler}»</Text>
-                <Badge variant="default">{f.count} раз</Badge>
+                <Badge variant="default">
+                  {f.count} {t.session.times}
+                </Badge>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Transcript snippet */}
       {transcriptSnippet && (
         <>
           <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
           <section className="p-4">
             <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
-              Фрагмент записи
+              {t.session.transcript}
             </Text>
             <Text className="text-sm text-[var(--tg-theme-hint-color)] italic leading-relaxed">
               {transcriptSnippet}
@@ -129,7 +132,6 @@ export function SessionDetailScreen() {
 
       <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
-      {/* Advice */}
       <section className="p-4">
         <div className="bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl p-4">
           <Text className="text-[15px] leading-relaxed">💡 {session.advice}</Text>

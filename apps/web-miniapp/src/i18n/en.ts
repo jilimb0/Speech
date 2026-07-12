@@ -1,0 +1,58 @@
+import type { Translations } from './types.js';
+
+export const en: Translations = {
+  premium: {
+    title: 'Premium',
+    heading: 'Cleaner Premium',
+    subtitle: 'Full access to all speech analysis features',
+    features: [
+      'Unlimited voice analysis sessions',
+      'Detailed filler word statistics',
+      'Advanced recommendations',
+      'Priority processing',
+    ],
+    buy: 'Buy Premium ⭐',
+    buying: 'Creating payment…',
+    paymentError: 'Payment creation failed',
+  },
+  history: {
+    title: 'History',
+    progress: 'Progress',
+    empty: 'No sessions yet',
+    emptyHint:
+      'Send a 30–60 second voice message to the bot, and your first session will appear here.',
+    emptyTip: 'Spontaneous speech works best — tell about your plans or recap the news.',
+    sec: 'sec',
+    fillers: 'fillers',
+    loadError: 'Load error',
+    retry: 'Retry',
+  },
+  session: {
+    title: 'Session',
+    notFound: 'Session not found',
+    metrics: 'Metrics',
+    fillersTotal: 'Filler words',
+    fillersPerMin: 'Fillers per minute',
+    wordsPerMin: 'Words per minute',
+    speechRate: 'Speech rate',
+    topFillers: 'Top fillers',
+    times: 'times',
+    transcript: 'Transcript',
+    loadError: 'Load error',
+    slow: 'Slow 🐢',
+    moderate: 'Moderate ✅',
+    fast: 'Fast ⚡',
+  },
+  progress: {
+    title: 'Progress',
+    avgScore7d: 'Average score (7 days)',
+    bestScore: 'Best result',
+    fillersPerMin7d: 'Fillers/min (7 days)',
+    totalSessions: 'Total sessions',
+    delta: 'Change from last session',
+    empty: 'No data yet. Make your first recording in the bot.',
+    viewHistory: 'View session history',
+    loadError: 'Load error',
+    retry: 'Retry',
+  },
+};

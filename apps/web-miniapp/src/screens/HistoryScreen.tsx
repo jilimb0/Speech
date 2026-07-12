@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
 import { PageHeader } from '../components/PageHeader.js';
 import { ScoreBadge } from '../components/ScoreBadge.js';
+import { useTranslation } from '../i18n/index.js';
 
 function formatDate(date: Date | string): string {
   return new Intl.DateTimeFormat('ru', {
@@ -16,6 +17,7 @@ function formatDate(date: Date | string): string {
 }
 
 export function HistoryScreen() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,17 +27,17 @@ export function HistoryScreen() {
     api
       .getSessions()
       .then(setSessions)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Ошибка загрузки'))
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : t.history.loadError))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t.history.loadError]);
 
   return (
     <div className="min-h-dvh pb-20">
       <PageHeader
-        title="История"
+        title={t.history.title}
         right={
           <Button variant="ghost" size="sm" onClick={() => navigate('/progress')}>
-            Прогресс
+            {t.history.progress}
           </Button>
         }
       />
@@ -53,7 +55,7 @@ export function HistoryScreen() {
         <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-4 text-center">
           <Text className="text-[#ff3b30]">{error}</Text>
           <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-            Повторить
+            {t.history.retry}
           </Button>
         </div>
       )}
@@ -75,12 +77,12 @@ export function HistoryScreen() {
               opacity="0.4"
             />
           </svg>
-          <Text className="text-xl font-semibold">Сессий пока нет</Text>
+          <Text className="text-xl font-semibold">{t.history.empty}</Text>
           <Text className="text-[var(--tg-theme-hint-color)] text-sm leading-relaxed max-w-[260px]">
-            Отправь боту голосовое сообщение 30–60 секунд, и твоя первая сессия появится здесь.
+            {t.history.emptyHint}
           </Text>
           <Text className="text-[var(--tg-theme-hint-color)] text-xs mt-1">
-            Лучше всего подходит спонтанная речь — расскажи о своих планах или перескажи новости.
+            {t.history.emptyTip}
           </Text>
         </div>
       )}
@@ -100,10 +102,10 @@ export function HistoryScreen() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
-                    {s.audioDurationSec} сек
+                    {s.audioDurationSec} {t.history.sec}
                   </Text>
                   <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
-                    {s.totalFillers} паразитов
+                    {s.totalFillers} {t.history.fillers}
                     {s.topFiller ? (
                       <>
                         {' '}

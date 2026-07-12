@@ -3,15 +3,10 @@ import { useState } from 'react';
 import { api } from '../api/client.js';
 import { BackButton } from '../components/BackButton.js';
 import { PageHeader } from '../components/PageHeader.js';
-
-const FEATURES = [
-  'Безлимитные сессии голосового анализа',
-  'Детальная статистика по словам-паразитам',
-  'Расширенные рекомендации',
-  'Приоритетная обработка записей',
-];
+import { useTranslation } from '../i18n/index.js';
 
 export function PremiumScreen() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +17,7 @@ export function PremiumScreen() {
       const { link } = await api.createInvoice();
       window.open(link, '_blank');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ошибка при создании платежа');
+      setError(e instanceof Error ? e.message : t.premium.paymentError);
     } finally {
       setLoading(false);
     }
@@ -30,19 +25,19 @@ export function PremiumScreen() {
 
   return (
     <div className="min-h-dvh pb-10">
-      <PageHeader title="Премиум" left={<BackButton />} />
+      <PageHeader title={t.premium.title} left={<BackButton />} />
 
       <div className="flex flex-col items-center px-6 pt-8 pb-6 gap-6 text-center">
         <div className="text-5xl">⭐</div>
-        <Text className="text-2xl font-bold leading-tight">Чище Премиум</Text>
+        <Text className="text-2xl font-bold leading-tight">{t.premium.heading}</Text>
         <Text className="text-sm text-[var(--tg-theme-hint-color)] leading-relaxed">
-          Полный доступ ко всем возможностям анализа речи
+          {t.premium.subtitle}
         </Text>
       </div>
 
       <section className="px-6 pb-6">
         <ul className="flex flex-col gap-3">
-          {FEATURES.map((f) => (
+          {t.premium.features.map((f) => (
             <li key={f} className="flex items-start gap-3">
               <Text className="text-lg leading-none mt-0.5">✅</Text>
               <Text className="text-sm leading-relaxed">{f}</Text>
@@ -57,7 +52,7 @@ export function PremiumScreen() {
           disabled={loading}
           onClick={handleBuy}
         >
-          {loading ? 'Создание платежа…' : 'Купить Премиум ⭐'}
+          {loading ? t.premium.buying : t.premium.buy}
         </Button>
         {error && <Text className="text-xs text-center text-[#ff3b30]">{error}</Text>}
       </section>
