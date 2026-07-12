@@ -1,5 +1,5 @@
 import type { Session } from '@speech/shared';
-import { Badge, Card, Divider, Skeleton, Text } from '@ui-construction-library/core';
+import { Badge, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -15,10 +15,10 @@ const RATE_LABELS: Record<string, string> = {
 
 function MetricCard({ value, label }: { value: string | number; label: string }) {
   return (
-    <Card className="flex flex-col gap-1 p-3 bg-[var(--tg-theme-secondary-bg-color)] border-0 rounded-xl">
+    <div className="flex flex-col gap-1 p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl">
       <Text className="text-xl font-semibold">{value}</Text>
       <Text className="text-xs text-[var(--tg-theme-hint-color)] leading-tight">{label}</Text>
-    </Card>
+    </div>
   );
 }
 
@@ -75,7 +75,7 @@ export function SessionDetailScreen() {
         <ScoreRing score={session.sessionScore} size={128} />
       </div>
 
-      <Divider className="mx-4" />
+      <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
       {/* Metrics grid */}
       <section className="p-4">
@@ -90,7 +90,7 @@ export function SessionDetailScreen() {
         </div>
       </section>
 
-      <Divider className="mx-4" />
+      <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
       {/* Top fillers */}
       {session.topFillers.length > 0 && (
@@ -115,7 +115,7 @@ export function SessionDetailScreen() {
       {/* Transcript snippet */}
       {transcriptSnippet && (
         <>
-          <Divider className="mx-4" />
+          <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
           <section className="p-4">
             <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
               Фрагмент записи
@@ -127,13 +127,13 @@ export function SessionDetailScreen() {
         </>
       )}
 
-      <Divider className="mx-4" />
+      <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
       {/* Advice */}
       <section className="p-4">
-        <Card className="bg-[var(--tg-theme-secondary-bg-color)] border-0 rounded-2xl p-4">
+        <div className="bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl p-4">
           <Text className="text-[15px] leading-relaxed">💡 {session.advice}</Text>
-        </Card>
+        </div>
       </section>
     </div>
   );

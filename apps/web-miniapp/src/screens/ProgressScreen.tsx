@@ -1,5 +1,5 @@
 import type { ProgressSummary } from '@speech/shared';
-import { Button, Card, Divider, Skeleton, Text } from '@ui-construction-library/core';
+import { Button, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -14,7 +14,7 @@ interface StatCardProps {
 
 function StatCard({ value, label, valueColor }: StatCardProps) {
   return (
-    <Card className="flex flex-col gap-1.5 p-4 bg-[var(--tg-theme-secondary-bg-color)] border-0 rounded-2xl">
+    <div className="flex flex-col gap-1.5 p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl">
       <Text
         className="text-3xl font-bold leading-none"
         style={valueColor ? { color: valueColor } : undefined}
@@ -22,7 +22,7 @@ function StatCard({ value, label, valueColor }: StatCardProps) {
         {value}
       </Text>
       <Text className="text-xs text-[var(--tg-theme-hint-color)] leading-snug">{label}</Text>
-    </Card>
+    </div>
   );
 }
 
@@ -54,7 +54,7 @@ function ProgressGrid({ progress }: { progress: ProgressSummary }) {
         <StatCard value={deltaValue} label="Изменение к прошлой сессии" valueColor={deltaColor} />
       </div>
 
-      <Divider className="mx-4" />
+      <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
       {progress.totalSessions === 0 ? (
         <div className="p-6 text-center">
           <Text className="text-[var(--tg-theme-hint-color)] text-sm">
