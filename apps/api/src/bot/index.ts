@@ -1,6 +1,8 @@
 import type { BotClient } from '@tgwrapper/core';
 import { createBotClient } from '@tgwrapper/core';
 import { config } from '../config.js';
+import { log } from '../log.js';
+import { registerPaymentHandlers } from './handlers/payments.js';
 import { registerCallbackRouter } from './routers/callback-router.js';
 import { registerMessageRouter } from './routers/message-router.js';
 
@@ -18,9 +20,10 @@ export async function createBot(): Promise<BotClient> {
 
   registerMessageRouter(bot);
   registerCallbackRouter(bot);
+  registerPaymentHandlers(bot);
 
   bot.start().catch((error) => {
-    console.error('Bot polling failed:', error);
+    log.error({ err: error }, 'Bot polling failed');
   });
   return bot;
 }

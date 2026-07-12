@@ -15,4 +15,5 @@ export interface CreateUserInput {
   telegramUserId: number;
   username?: string | null;
   firstName?: string | null;
+  plan?: Plan;
 }

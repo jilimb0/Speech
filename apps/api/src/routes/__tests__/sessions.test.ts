@@ -16,6 +16,6 @@ describe('Session Routes', () => {
     const app = Fastify();
     await app.register(sessionRoutes);
     const routes = app.printRoutes();
-    expect(routes).toContain('/api/sessions');
+    expect(routes).toContain('sessions (GET');
   });
 });

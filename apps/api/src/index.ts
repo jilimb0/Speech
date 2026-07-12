@@ -1,11 +1,10 @@
-import { existsSync } from 'node:fs';
 import cors from '@fastify/cors';
-import fastifyStatic from '@fastify/static';
 import * as Sentry from '@sentry/node';
 import Fastify from 'fastify';
 import { createBot } from './bot/index.js';
 import { config } from './config.js';
 import { registerTmaAuth } from './middleware/tma-auth.js';
+import { paymentRoutes } from './routes/payments.js';
 import { sessionRoutes } from './routes/sessions.js';
 
 const sentryDsn = process.env.SENTRY_DSN;
@@ -36,27 +35,9 @@ logger.addHook('onSend', async (_request, reply) => {
 
 await registerTmaAuth(logger);
 await logger.register(sessionRoutes);
+await logger.register(paymentRoutes);
 
 logger.get('/health', async () => ({ ok: true, ts: new Date().toISOString() }));
-
-logger.get('/debug', async (request) => ({
-  initDataHeader: request.headers['x-telegram-init-data'] ?? '(empty)',
-  initDataLength: String(request.headers['x-telegram-init-data'] ?? '').length,
-  userAgent: request.headers['user-agent'] ?? '(unknown)',
-}));
-
-// Serve web-miniapp static files
-const staticDir = '/app/web-miniapp';
-if (existsSync(staticDir)) {
-  await logger.register(fastifyStatic, {
-    root: staticDir,
-    wildcard: true,
-  });
-  logger.setNotFoundHandler(async (_request, reply) => {
-    return reply.sendFile('index.html');
-  });
-  logger.log.info(`Serving static files from ${staticDir}`);
-}
 
 // Start Telegram bot (polling)
 await createBot();

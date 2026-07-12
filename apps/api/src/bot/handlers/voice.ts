@@ -2,11 +2,17 @@ import { rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { analyzeFillers, calculateScore } from '@speech/analysis';
-import { countTodaySessions, createSession, getUserByTelegramId } from '@speech/sessions';
+import {
+  countTodaySessions,
+  createSession,
+  getUserByTelegramId,
+  upsertUser,
+} from '@speech/sessions';
 import type { FillerAnalysisResult, ScoringResult } from '@speech/shared';
 import { FasterWhisperProvider, ManagedWhisperProvider, SpeechService } from '@speech/speech';
 import type { BotClient, Message } from '@tgwrapper/core';
 import { config } from '../../config.js';
+import { log } from '../../log.js';
 import { getApiClient, TELEGRAM_FILE_BASE } from '../telegram-api.js';
 
 export interface VoiceMessage {
@@ -86,68 +92,37 @@ async function deleteStatusMessage(chatId: number, messageId: number): Promise<v
 const processingChats = new Map<number, number>();
 const RATE_LIMIT_COOLDOWN_MS = 15_000;
 
-export async function handleVoiceMessage(
-  bot: BotClient,
-  msg: Message,
-  voice: VoiceMessage,
-): Promise<void> {
-  const chatId = msg.chat.id;
-  const durationSec = voice.duration;
-  const api = getApiClient();
-
-  const fromUser = msg.from as { id?: number } | undefined;
-  const telegramUserId = fromUser?.id;
-
-  // Rate limit: one voice message per chatId at a time
+function isRateLimited(chatId: number): boolean {
   const now = Date.now();
   const lastProcessing = processingChats.get(chatId);
   if (lastProcessing && now - lastProcessing < RATE_LIMIT_COOLDOWN_MS) {
-    await bot.sendMessage(chatId, 'Предыдущее сообщение ещё обрабатывается. Подожди немного.');
-    return;
+    return true;
   }
   processingChats.set(chatId, now);
+  return false;
+}
 
-  if (durationSec < config.minAudioDurationSec) {
-    await bot.sendMessage(
-      chatId,
-      `Слишком коротко. Запиши хотя бы ${config.minAudioDurationSec}–30 секунд живой речи.`,
-    );
-    return;
+async function resolveUser(telegramUserId: number | undefined, msg: Message) {
+  if (!telegramUserId) return null;
+  let user = await getUserByTelegramId(telegramUserId);
+  if (!user) {
+    user = await upsertUser({
+      telegramUserId,
+      username: (msg.from as { username?: string })?.username ?? null,
+      firstName: (msg.from as { first_name?: string })?.first_name ?? null,
+    }).catch(() => null);
   }
+  return user;
+}
 
-  if (durationSec > config.maxAudioDurationSec) {
-    await bot.sendMessage(
-      chatId,
-      `Запись слишком длинная. Оптимально — 30–60 секунд, максимум ${config.maxAudioDurationSec} секунд.`,
-    );
-    return;
-  }
-
-  const user = telegramUserId ? await getUserByTelegramId(telegramUserId) : null;
-
-  if (
-    user &&
-    user.plan === 'free' &&
-    (await countTodaySessions(user.id)) >= config.freeDailySessionLimit
-  ) {
-    await bot.sendMessage(
-      chatId,
-      `На бесплатном плане доступно ${config.freeDailySessionLimit} сессии в день. Возвращайся завтра или открой историю, чтобы узнать о premium.`,
-      {
-        reply_markup: {
-          inline_keyboard: [[{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }]],
-        },
-      },
-    );
-    return;
-  }
-
-  const statusResult = (await api.callApiUnsafe('sendMessage', {
-    chat_id: chatId,
-    text: 'Слушаю запись и ищу слова-паразиты, повторы и общий темп речи…',
-  })) as SendMessageResult;
-  const statusMessageId = statusResult.message_id;
-
+async function processAndSendResults(
+  bot: BotClient,
+  chatId: number,
+  durationSec: number,
+  voice: VoiceMessage,
+  user: Awaited<ReturnType<typeof resolveUser>>,
+  statusMessageId: number,
+) {
   let tempFilePath: string | null = null;
 
   try {
@@ -216,14 +191,78 @@ export async function handleVoiceMessage(
           }
         : undefined,
     });
-  } catch (error) {
-    await deleteStatusMessage(chatId, statusMessageId);
-    await bot.sendMessage(chatId, 'Ошибка при обработке записи. Попробуй ещё раз чуть позже.');
-    console.error('Voice processing failed:', error);
   } finally {
-    processingChats.delete(chatId);
     if (tempFilePath) {
       await rm(tempFilePath, { force: true }).catch(() => {});
     }
+  }
+}
+
+export async function handleVoiceMessage(
+  bot: BotClient,
+  msg: Message,
+  voice: VoiceMessage,
+): Promise<void> {
+  const chatId = msg.chat.id;
+  const durationSec = voice.duration;
+  const api = getApiClient();
+
+  const fromUser = msg.from as { id?: number } | undefined;
+  const telegramUserId = fromUser?.id;
+
+  if (isRateLimited(chatId)) {
+    await bot.sendMessage(chatId, 'Предыдущее сообщение ещё обрабатывается. Подожди немного.');
+    return;
+  }
+
+  if (durationSec < config.minAudioDurationSec) {
+    await bot.sendMessage(
+      chatId,
+      `Слишком коротко. Запиши хотя бы ${config.minAudioDurationSec}–30 секунд живой речи.`,
+    );
+    return;
+  }
+
+  if (durationSec > config.maxAudioDurationSec) {
+    await bot.sendMessage(
+      chatId,
+      `Запись слишком длинная. Оптимально — 30–60 секунд, максимум ${config.maxAudioDurationSec} секунд.`,
+    );
+    return;
+  }
+
+  const user = await resolveUser(telegramUserId, msg);
+
+  if (
+    user &&
+    user.plan === 'free' &&
+    (await countTodaySessions(user.id)) >= config.freeDailySessionLimit
+  ) {
+    await bot.sendMessage(
+      chatId,
+      `На бесплатном плане доступно ${config.freeDailySessionLimit} сессии в день. Возвращайся завтра или открой историю, чтобы узнать о premium.`,
+      {
+        reply_markup: {
+          inline_keyboard: [[{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }]],
+        },
+      },
+    );
+    return;
+  }
+
+  const statusResult = (await api.callApiUnsafe('sendMessage', {
+    chat_id: chatId,
+    text: 'Слушаю запись и ищу слова-паразиты, повторы и общий темп речи…',
+  })) as SendMessageResult;
+  const statusMessageId = statusResult.message_id;
+
+  try {
+    await processAndSendResults(bot, chatId, durationSec, voice, user, statusMessageId);
+  } catch (error) {
+    await deleteStatusMessage(chatId, statusMessageId);
+    await bot.sendMessage(chatId, 'Ошибка при обработке записи. Попробуй ещё раз чуть позже.');
+    log.error({ err: error }, 'Voice processing failed');
+  } finally {
+    processingChats.delete(chatId);
   }
 }

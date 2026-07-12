@@ -1,4 +1,6 @@
 import { Button, Text } from '@ui-construction-library/core';
+import { useState } from 'react';
+import { api } from '../api/client.js';
 import { BackButton } from '../components/BackButton.js';
 import { PageHeader } from '../components/PageHeader.js';
 
@@ -10,6 +12,22 @@ const FEATURES = [
 ];
 
 export function PremiumScreen() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleBuy() {
+    setLoading(true);
+    setError(null);
+    try {
+      const { link } = await api.createInvoice();
+      window.open(link, '_blank');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ошибка при создании платежа');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-dvh pb-10">
       <PageHeader title="Премиум" left={<BackButton />} />
@@ -33,18 +51,15 @@ export function PremiumScreen() {
         </ul>
       </section>
 
-      <section className="px-6">
+      <section className="px-6 flex flex-col gap-3">
         <Button
           className="w-full py-3 text-base font-semibold rounded-xl"
-          onClick={() => {
-            window.open('https://t.me/clean_speech_bot', '_blank');
-          }}
+          disabled={loading}
+          onClick={handleBuy}
         >
-          Купить Премиум
+          {loading ? 'Создание платежа…' : 'Купить Премиум ⭐'}
         </Button>
-        <Text className="text-xs text-center text-[var(--tg-theme-hint-color)] mt-3">
-          Скоро — оплата через Telegram Stars
-        </Text>
+        {error && <Text className="text-xs text-center text-[#ff3b30]">{error}</Text>}
       </section>
     </div>
   );

@@ -7,14 +7,14 @@ import {
 import type { FastifyInstance } from 'fastify';
 
 export async function sessionRoutes(app: FastifyInstance): Promise<void> {
-  app.get('/api/me', async (request, reply) => {
+  app.get('/me', async (request, reply) => {
     const user = await getUserByTelegramId(request.telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
     return { ok: true, data: user };
   });
 
   app.get<{ Querystring: { limit?: string; offset?: string } }>(
-    '/api/sessions',
+    '/sessions',
     async (request, reply) => {
       const user = await getUserByTelegramId(request.telegramUserId);
       if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
@@ -27,7 +27,7 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  app.get<{ Params: { id: string } }>('/api/sessions/:id', async (request, reply) => {
+  app.get<{ Params: { id: string } }>('/sessions/:id', async (request, reply) => {
     const user = await getUserByTelegramId(request.telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
 
@@ -39,7 +39,7 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true, data: session };
   });
 
-  app.get('/api/progress/summary', async (request, reply) => {
+  app.get('/progress/summary', async (request, reply) => {
     const user = await getUserByTelegramId(request.telegramUserId);
     if (!user) return reply.code(404).send({ ok: false, error: 'User not found' });
 

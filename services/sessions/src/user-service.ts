@@ -29,12 +29,13 @@ export async function upsertUser(input: CreateUserInput): Promise<User> {
   const sql = getDb();
 
   const rows = await sql<UserRow[]>`
-    INSERT INTO users (telegram_user_id, username, first_name)
-    VALUES (${input.telegramUserId}, ${input.username ?? null}, ${input.firstName ?? null})
+    INSERT INTO users (telegram_user_id, username, first_name, plan)
+    VALUES (${input.telegramUserId}, ${input.username ?? null}, ${input.firstName ?? null}, ${input.plan ?? 'free'})
     ON CONFLICT (telegram_user_id) DO UPDATE
       SET username = EXCLUDED.username,
           first_name = EXCLUDED.first_name,
-          last_seen_at = NOW()
+          last_seen_at = NOW(),
+          plan = CASE WHEN ${input.plan ?? 'free'} = 'premium' THEN 'premium' ELSE users.plan END
     RETURNING *
   `;
 

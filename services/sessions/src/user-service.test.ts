@@ -56,5 +56,23 @@ describe('upsertUser', () => {
     ]);
     const user = await upsertUser({ telegramUserId: 999, username: 'newuser', firstName: 'New' });
     expect(user.telegramUserId).toBe(999);
+    expect(user.plan).toBe('free');
+  });
+
+  it('upgrades user to premium', async () => {
+    mockSql.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        telegram_user_id: 888,
+        username: 'test',
+        first_name: 'Test',
+        plan: 'premium',
+        first_seen_at: new Date(),
+        last_seen_at: new Date(),
+        custom_filler_list: [],
+      },
+    ]);
+    const user = await upsertUser({ telegramUserId: 888, plan: 'premium' });
+    expect(user.plan).toBe('premium');
   });
 });

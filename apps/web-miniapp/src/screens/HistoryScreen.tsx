@@ -59,10 +59,28 @@ export function HistoryScreen() {
       )}
 
       {!loading && !error && sessions.length === 0 && (
-        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-2 text-center">
-          <Text>Сессий пока нет.</Text>
-          <Text className="text-[var(--tg-theme-hint-color)] text-sm">
-            Отправь голосовое сообщение боту, чтобы начать.
+        <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-4 text-center">
+          <svg
+            width="80"
+            height="80"
+            viewBox="0 0 80 80"
+            fill="none"
+            role="img"
+            aria-label="Нет сессий"
+          >
+            <rect width="80" height="80" rx="40" fill="var(--tg-theme-secondary-bg-color)" />
+            <path
+              d="M48 28c-8.8 0-16 7.2-16 16 0 3.6 1.2 6.8 3.2 9.6L32 58l6-3.2a15.6 15.6 0 0 0 10 3.6c8.8 0 16-7.2 16-16s-7.2-16-16-16zm0 28.8c-2.8 0-5.6-.8-8-2.4l-.4-.4-4.4 2 1.6-4-.4-.4A13.2 13.2 0 0 1 34.4 44C34.4 36.4 40.4 30.4 48 30.4S61.6 36.4 61.6 44 55.6 56.8 48 56.8zM43.6 44c0-.8-.4-1.2-1.2-1.2H42c-.8 0-1.2.4-1.2 1.2 0 .8.4 1.2 1.2 1.2h.4c.8 0 1.2-.4 1.2-1.2zm5.2 0c0-.8-.4-1.2-1.2-1.2s-1.2.4-1.2 1.2.4 1.2 1.2 1.2 1.2-.4 1.2-1.2zm5.2 0c0-.8-.4-1.2-1.2-1.2s-1.2.4-1.2 1.2.4 1.2 1.2 1.2 1.2-.4 1.2-1.2z"
+              fill="var(--tg-theme-hint-color)"
+              opacity="0.4"
+            />
+          </svg>
+          <Text className="text-xl font-semibold">Сессий пока нет</Text>
+          <Text className="text-[var(--tg-theme-hint-color)] text-sm leading-relaxed max-w-[260px]">
+            Отправь боту голосовое сообщение 30–60 секунд, и твоя первая сессия появится здесь.
+          </Text>
+          <Text className="text-[var(--tg-theme-hint-color)] text-xs mt-1">
+            Лучше всего подходит спонтанная речь — расскажи о своих планах или перескажи новости.
           </Text>
         </div>
       )}

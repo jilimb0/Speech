@@ -8,8 +8,9 @@ export function setInitData(initData: string): void {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
-async function apiFetch<T>(path: string): Promise<T> {
+async function apiFetch<T>(path: string, options?: { method?: string }): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
+    method: options?.method ?? 'GET',
     headers: {
       'x-telegram-init-data': _initData,
     },
@@ -33,4 +34,7 @@ export const api = {
   getSession: (id: string) => apiFetch<Session>(`/api/sessions/${id}`),
 
   getProgress: () => apiFetch<ProgressSummary>('/api/progress/summary'),
+
+  createInvoice: () =>
+    apiFetch<{ link: string }>('/api/payments/create-invoice', { method: 'POST' }),
 };
