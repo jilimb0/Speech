@@ -25,5 +25,6 @@ export async function createBot(): Promise<BotClient> {
   bot.start().catch((error) => {
     log.error({ err: error }, 'Bot polling failed');
   });
+
   return bot;
 }

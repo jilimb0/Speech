@@ -19,12 +19,26 @@ interface SessionRow {
   session_score: number;
   summary_text: string;
   advice: string;
+  pause_metrics_json?: unknown;
+  exercises_json?: unknown;
   created_at: Date;
 }
 
 function parseJson<T>(val: unknown): T {
   if (typeof val === 'string') return JSON.parse(val) as T;
   return val as T;
+}
+
+function parseJsonField<T>(field: unknown): T | undefined {
+  if (!field) return undefined;
+  if (typeof field === 'string') {
+    try {
+      return JSON.parse(field) as T;
+    } catch {
+      return undefined;
+    }
+  }
+  return field as T;
 }
 
 function rowToSession(row: SessionRow): Session {
@@ -46,6 +60,8 @@ function rowToSession(row: SessionRow): Session {
     sessionScore: row.session_score,
     summaryText: row.summary_text,
     advice: row.advice,
+    pauseMetrics: parseJsonField<Session['pauseMetrics']>(row.pause_metrics_json),
+    exercises: parseJsonField<Session['exercises']>(row.exercises_json),
     createdAt: row.created_at,
   };
 }
@@ -59,13 +75,15 @@ export async function createSession(input: CreateSessionInput): Promise<Session>
       raw_transcript, normalized_transcript, transcription_status,
       total_words, total_fillers, fillers_per_minute, words_per_minute,
       speech_rate, top_fillers_json, repeated_words_json,
-      session_score, summary_text, advice
+      session_score, summary_text, advice,
+      pause_metrics_json, exercises_json
     ) VALUES (
       ${input.userId}, 'telegram', ${input.audioDurationSec},
       ${input.rawTranscript}, ${input.normalizedTranscript}, ${input.transcriptionStatus},
       ${input.totalWords}, ${input.totalFillers}, ${input.fillersPerMinute}, ${input.wordsPerMinute},
       ${input.speechRate}, ${JSON.stringify(input.topFillers)}, ${JSON.stringify(input.repeatedWords)},
-      ${input.sessionScore}, ${input.summaryText}, ${input.advice}
+      ${input.sessionScore}, ${input.summaryText}, ${input.advice},
+      ${JSON.stringify(input.pauseMetrics ?? {})}, ${JSON.stringify(input.exercises ?? [])}
     )
     RETURNING *
   `;

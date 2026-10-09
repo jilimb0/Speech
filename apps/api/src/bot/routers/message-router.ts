@@ -1,6 +1,6 @@
-import { upsertUser } from '@speech/sessions';
+import { updateUserPlan, upsertUser } from '@speech/sessions';
 import type { BotClient, Message } from '@tgwrapper/core';
-import { handleHelp, handleHistory, handleStart } from '../handlers/commands.js';
+import { handleHelp, handleHistory, handlePro, handleStart } from '../handlers/commands.js';
 import { handleVoiceMessage, type VoiceMessage } from '../handlers/voice.js';
 
 function getText(msg: Message): string | null {
@@ -34,9 +34,13 @@ async function routeText(bot: BotClient, msg: Message, text: string): Promise<vo
     await handleHistory(bot, msg);
     return;
   }
+  if (t === '/pro' || t === '/buy') {
+    await handlePro(bot, msg);
+    return;
+  }
   await bot.sendMessage(
     msg.chat.id,
-    'Пришли голосовое сообщение, и я разберу речь. Текстовые сообщения не обрабатываются.',
+    'Пришли голосовое сообщение, и я разберу речь. Для оформления подписки используй команду /pro.',
   );
 }
 
@@ -50,6 +54,21 @@ export function registerMessageRouter(bot: BotClient): void {
       username: from.username ?? null,
       firstName: from.first_name ?? null,
     }).catch(() => {});
+
+    // Обработка успешного платежа через Telegram Stars
+    const payment = (msg as { successful_payment?: { total_amount: number; currency: string } })
+      .successful_payment;
+    if (payment) {
+      await updateUserPlan(from.id, 'premium').catch((err) =>
+        console.error('Failed to upgrade user plan:', err),
+      );
+      await bot.sendMessage(
+        msg.chat.id,
+        '🎉 *Оплата получена! Подписка Speech Pro активирована.*\n\nТеперь у тебя безлимитный анализ речи и расширенные упражнения от ИИ-коуча.',
+        { parse_mode: 'Markdown' },
+      );
+      return;
+    }
 
     const text = getText(msg);
     if (text) {

@@ -6,7 +6,12 @@ vi.mock('../src/db.js', () => ({
   getDb: vi.fn(() => mockSql),
 }));
 
-import { getUserById, getUserByTelegramId, upsertUser } from '../src/user-service.js';
+import {
+  getUserById,
+  getUserByTelegramId,
+  updateUserPlan,
+  upsertUser,
+} from '../src/user-service.js';
 
 describe('getUserByTelegramId', () => {
   it('returns null when user not found', async () => {
@@ -74,5 +79,31 @@ describe('upsertUser', () => {
     ]);
     const user = await upsertUser({ telegramUserId: 888, plan: 'premium' });
     expect(user.plan).toBe('premium');
+  });
+});
+
+describe('updateUserPlan', () => {
+  it('updates plan to premium', async () => {
+    mockSql.mockResolvedValueOnce([
+      {
+        id: 'u1',
+        telegram_user_id: 12345,
+        username: 'test',
+        first_name: 'Test',
+        plan: 'premium',
+        first_seen_at: new Date(),
+        last_seen_at: new Date(),
+        custom_filler_list: [],
+      },
+    ]);
+    const user = await updateUserPlan(12345, 'premium');
+    expect(user.plan).toBe('premium');
+  });
+
+  it('throws when user not found', async () => {
+    mockSql.mockResolvedValueOnce([]);
+    await expect(updateUserPlan(99999, 'premium')).rejects.toThrow(
+      'User with telegram ID 99999 not found',
+    );
   });
 });

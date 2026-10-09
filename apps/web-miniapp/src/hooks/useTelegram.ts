@@ -28,6 +28,8 @@ interface TelegramWebApp {
   expand(): void;
   ready(): void;
   close(): void;
+  openTelegramLink?(url: string): void;
+  openLink?(url: string): void;
   BackButton: {
     show(): void;
     hide(): void;

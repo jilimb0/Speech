@@ -123,4 +123,32 @@ describe('analyzeFillers', () => {
     const toEst = result.topFillers.find((f) => f.filler === 'то есть');
     expect(toEst?.count).toBe(2);
   });
+
+  it('вычисляет метрики пауз молчания по сегментам', () => {
+    const result = analyzeFillers({
+      normalizedTranscript: 'первая фраза вторая фраза третья фраза',
+      audioDurationSec: 20,
+      segments: [
+        { start: 0, end: 2.0, text: 'первая фраза' },
+        { start: 4.0, end: 6.0, text: 'вторая фраза' }, // пауза 2.0 сек (>= 1.5)
+        { start: 6.5, end: 8.0, text: 'третья фраза' }, // пауза 0.5 сек (< 1.5)
+        { start: 11.0, end: 13.0, text: 'четвертая фраза' }, // пауза 3.0 сек (>= 1.5)
+      ],
+    });
+
+    expect(result.pauseMetrics.pauseCount).toBe(2);
+    expect(result.pauseMetrics.longestPauseSec).toBe(3.0);
+    expect(result.pauseMetrics.totalPauseDurationSec).toBe(5.0);
+  });
+
+  it('возвращает нулевые паузы если сегментов нет', () => {
+    const result = analyzeFillers({
+      normalizedTranscript: 'первая фраза',
+      audioDurationSec: 10,
+    });
+
+    expect(result.pauseMetrics.pauseCount).toBe(0);
+    expect(result.pauseMetrics.totalPauseDurationSec).toBe(0);
+    expect(result.pauseMetrics.longestPauseSec).toBe(0);
+  });
 });

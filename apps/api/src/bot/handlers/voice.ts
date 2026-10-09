@@ -1,15 +1,20 @@
 import { rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { analyzeFillers, calculateScore } from '@speech/analysis';
+import { analyzeFillers, calculateScore, generateAiCoach } from '@speech/analysis';
 import {
   countTodaySessions,
   createSession,
   getUserByTelegramId,
   upsertUser,
 } from '@speech/sessions';
-import type { FillerAnalysisResult, ScoringResult } from '@speech/shared';
-import { FasterWhisperProvider, ManagedWhisperProvider, SpeechService } from '@speech/speech';
+import type { AiCoachResult, FillerAnalysisResult, ScoringResult } from '@speech/shared';
+import {
+  FasterWhisperProvider,
+  InMemoryTranscriptionCache,
+  ManagedWhisperProvider,
+  SpeechService,
+} from '@speech/speech';
 import type { BotClient, Message } from '@tgwrapper/core';
 import { config } from '../../config.js';
 import { log } from '../../log.js';
@@ -35,12 +40,13 @@ const speechProvider =
     ? new FasterWhisperProvider()
     : new ManagedWhisperProvider();
 
-const speechService = new SpeechService(speechProvider);
+const transcriptionCache = new InMemoryTranscriptionCache();
+const speechService = new SpeechService(speechProvider, transcriptionCache);
 
 const RATE_LABELS: Record<string, string> = {
-  slow: 'медленный 🐢',
-  moderate: 'умеренный ✅',
-  fast: 'быстрый ⚡',
+  slow: 'медленный 🐢',
+  moderate: 'умеренный ✅',
+  fast: 'быстрый ⚡',
 };
 
 function scoreEmoji(score: number): string {
@@ -54,23 +60,37 @@ function buildReport(
   durationSec: number,
   analysis: FillerAnalysisResult,
   scoring: ScoringResult,
+  aiCoach?: AiCoachResult | null,
 ): string {
-  const rateLabel = RATE_LABELS[analysis.speechRate] ?? 'умеренный';
+  const rateLabel = RATE_LABELS[analysis.speechRate] ?? 'умеренный';
   const topFillersText =
     analysis.topFillers.length > 0
       ? analysis.topFillers
           .slice(0, 3)
           .map((f) => `«${f.filler}» — ${f.count}`)
           .join(', ')
-      : 'не найдено';
+      : 'не найдено';
 
-  return `*Результат анализа*\n\n⏱ Длительность: ${durationSec} сек\n🔤 Слов-паразитов: ${analysis.totalFillers}\n📌 Чаще всего: ${topFillersText}\n🎙 Темп: ${rateLabel}\n${scoreEmoji(scoring.sessionScore)} Оценка: ${scoring.sessionScore}/100\n\n💡 ${scoring.advice}`;
+  let pausesText = '';
+  if (analysis.pauseMetrics && analysis.pauseMetrics.pauseCount > 0) {
+    pausesText = `\n⏸ Паузы зависания: ${analysis.pauseMetrics.pauseCount} (до ${analysis.pauseMetrics.longestPauseSec} сек)`;
+  }
+
+  let exerciseText = '';
+  const firstExercise = aiCoach?.exercises[0];
+  if (firstExercise) {
+    exerciseText = `\n\n🎯 *Упражнение от коуча:*\n*${firstExercise.title}*\n${firstExercise.description}${firstExercise.practiceText ? `\n_Тренировка: ${firstExercise.practiceText}_` : ''}`;
+  }
+
+  return `*Результат анализа*\n\n⏱ Длительность: ${durationSec} сек\n🔤 Слов-паразитов: ${analysis.totalFillers}\n📌 Чаще всего: ${topFillersText}\n🎙 Темп: ${rateLabel}${pausesText}\n${scoreEmoji(scoring.sessionScore)} Оценка: ${scoring.sessionScore}/100\n\n💡 ${scoring.advice}${exerciseText}`;
 }
 
 async function downloadVoice(fileId: string): Promise<string> {
   const api = getApiClient();
-  const fileInfo = (await api.callApiUnsafe('getFile', { file_id: fileId })) as GetFileResult;
-  const filePath = fileInfo.file_path;
+  const fileInfo = (await api.callApiUnsafe('getFile', { file_id: fileId })) as {
+    result?: GetFileResult;
+  };
+  const filePath = fileInfo.result?.file_path;
   if (!filePath) throw new Error('No file_path from Telegram API');
 
   const fileUrl = `${TELEGRAM_FILE_BASE}/${filePath}`;
@@ -89,16 +109,11 @@ async function deleteStatusMessage(chatId: number, messageId: number): Promise<v
     .catch(() => {});
 }
 
-const processingChats = new Map<number, number>();
-const RATE_LIMIT_COOLDOWN_MS = 15_000;
+const processingChats = new Set<number>();
 
 function isRateLimited(chatId: number): boolean {
-  const now = Date.now();
-  const lastProcessing = processingChats.get(chatId);
-  if (lastProcessing && now - lastProcessing < RATE_LIMIT_COOLDOWN_MS) {
-    return true;
-  }
-  processingChats.set(chatId, now);
+  if (processingChats.has(chatId)) return true;
+  processingChats.add(chatId);
   return false;
 }
 
@@ -142,6 +157,7 @@ async function processAndSendResults(
     const analysis = analyzeFillers({
       normalizedTranscript: transcription.normalizedTranscript,
       audioDurationSec: durationSec,
+      segments: transcription.segments,
     });
 
     const scoring = calculateScore({
@@ -152,7 +168,23 @@ async function processAndSendResults(
       speechRate: analysis.speechRate,
       topFillers: analysis.topFillers,
       repeatedWords: analysis.repeatedWords,
+      pauseMetrics: analysis.pauseMetrics,
     });
+
+    const aiCoach = await generateAiCoach(
+      {
+        topFillers: analysis.topFillers,
+        wordsPerMinute: analysis.wordsPerMinute,
+        speechRate: analysis.speechRate,
+        pauseMetrics: analysis.pauseMetrics,
+        transcriptSnippet: transcription.rawTranscript,
+      },
+      {
+        baseUrl: config.aiBaseUrl,
+        apiKey: config.aiApiKey,
+        model: config.aiModel,
+      },
+    );
 
     const session = user
       ? await createSession({
@@ -171,12 +203,14 @@ async function processAndSendResults(
           sessionScore: scoring.sessionScore,
           summaryText: scoring.summaryText,
           advice: scoring.advice,
+          pauseMetrics: analysis.pauseMetrics,
+          exercises: aiCoach.exercises,
         })
       : null;
 
     await deleteStatusMessage(chatId, statusMessageId);
 
-    await bot.sendMessage(chatId, buildReport(durationSec, analysis, scoring), {
+    await bot.sendMessage(chatId, buildReport(durationSec, analysis, scoring, aiCoach), {
       parse_mode: 'Markdown',
       reply_markup: session
         ? {
@@ -240,10 +274,13 @@ export async function handleVoiceMessage(
   ) {
     await bot.sendMessage(
       chatId,
-      `На бесплатном плане доступно ${config.freeDailySessionLimit} сессии в день. Возвращайся завтра или открой историю, чтобы узнать о premium.`,
+      `На бесплатном тарифе доступно ${config.freeDailySessionLimit} анализа в день. Оформи Pro подписку командой /pro (всего 50 Stars) для безлимита или возвращайся завтра!`,
       {
         reply_markup: {
-          inline_keyboard: [[{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }]],
+          inline_keyboard: [
+            [{ text: '⭐ Оформить Pro (50 Stars)', callback_data: 'buy_pro' }],
+            [{ text: '📊 Открыть историю', web_app: { url: config.webAppUrl } }],
+          ],
         },
       },
     );
@@ -253,8 +290,8 @@ export async function handleVoiceMessage(
   const statusResult = (await api.callApiUnsafe('sendMessage', {
     chat_id: chatId,
     text: 'Слушаю запись и ищу слова-паразиты, повторы и общий темп речи…',
-  })) as SendMessageResult;
-  const statusMessageId = statusResult.message_id;
+  })) as { result?: SendMessageResult };
+  const statusMessageId = statusResult.result?.message_id ?? 0;
 
   try {
     await processAndSendResults(bot, chatId, durationSec, voice, user, statusMessageId);

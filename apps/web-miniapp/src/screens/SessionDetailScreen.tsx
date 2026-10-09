@@ -1,5 +1,5 @@
 import type { Session } from '@speech/shared';
-import { Badge, Skeleton, Text } from '@ui-construction-library/core';
+import { Badge, Button, Card, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -23,6 +23,17 @@ export function SessionDetailScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleShare = () => {
+    if (!session) return;
+    const text = `Моя чистота речи: ${session.sessionScore}/100! Проверь свою речь:`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/SpeechAnalyzerBot')}&text=${encodeURIComponent(text)}`;
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(shareUrl);
+    } else {
+      window.open(shareUrl, '_blank');
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -72,12 +83,17 @@ export function SessionDetailScreen() {
     <div className="min-h-dvh pb-10">
       <PageHeader title={t.session.title} left={<BackButton />} />
 
-      <div className="flex flex-col items-center py-8 gap-2">
+      {/* Score block */}
+      <div className="flex flex-col items-center py-6 gap-3">
         <ScoreRing score={session.sessionScore} size={128} />
+        <Button variant="outline" size="sm" onClick={handleShare}>
+          Поделиться результатом ↗
+        </Button>
       </div>
 
       <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
+      {/* Metrics grid */}
       <section className="p-4">
         <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
           {t.session.metrics}
@@ -90,6 +106,12 @@ export function SessionDetailScreen() {
             value={rateLabels[session.speechRate] ?? t.session.moderate}
             label={t.session.speechRate}
           />
+          {session.pauseMetrics && session.pauseMetrics.pauseCount > 0 && (
+            <MetricCard
+              value={`${session.pauseMetrics.pauseCount} (${session.pauseMetrics.longestPauseSec}с)`}
+              label="Пауз зависания (макс)"
+            />
+          )}
         </div>
       </section>
 
@@ -116,6 +138,37 @@ export function SessionDetailScreen() {
         </section>
       )}
 
+      {/* AI Coach Exercises */}
+      {session.exercises && session.exercises.length > 0 && (
+        <>
+          <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
+          <section className="p-4">
+            <Text className="text-xs font-semibold uppercase tracking-wider text-[var(--tg-theme-hint-color)] mb-3">
+              🎯 Упражнения от ИИ-коуча
+            </Text>
+            <div className="flex flex-col gap-3">
+              {session.exercises.map((ex) => (
+                <Card
+                  key={ex.title}
+                  className="bg-[var(--tg-theme-secondary-bg-color)] border-0 rounded-2xl p-4 flex flex-col gap-1.5"
+                >
+                  <Text className="font-bold text-sm">{ex.title}</Text>
+                  <Text className="text-xs text-[var(--tg-theme-hint-color)] leading-relaxed">
+                    {ex.description}
+                  </Text>
+                  {ex.practiceText && (
+                    <Text className="text-xs italic bg-[var(--tg-theme-bg-color)] p-2 rounded-lg mt-1 text-[var(--tg-theme-text-color)]">
+                      {ex.practiceText}
+                    </Text>
+                  )}
+                </Card>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* Transcript snippet */}
       {transcriptSnippet && (
         <>
           <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />

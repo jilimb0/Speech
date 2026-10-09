@@ -1,7 +1,9 @@
 import type {
+  AudioSegment,
   FillerAnalysisInput,
   FillerAnalysisResult,
   FillerCount,
+  PauseMetrics,
   RepeatedWord,
   SpeechRate,
 } from '@speech/shared';
@@ -108,10 +110,63 @@ function findRepeatedWords(tokens: string[], fillerSet: Set<string>): RepeatedWo
 }
 
 /**
+ * Порог (в секундах) для определения затяжной паузы («зависания»).
+ */
+export const HESITATION_PAUSE_THRESHOLD_SEC = 1.5;
+
+/**
+ * Вычисляет метрики пауз молчания между сегментами речи.
+ */
+export function calculatePauseMetrics(
+  segments?: AudioSegment[],
+  thresholdSec = HESITATION_PAUSE_THRESHOLD_SEC,
+): PauseMetrics {
+  if (!segments || segments.length <= 1) {
+    return {
+      pauseCount: 0,
+      totalPauseDurationSec: 0,
+      longestPauseSec: 0,
+    };
+  }
+
+  let pauseCount = 0;
+  let totalPauseDurationSec = 0;
+  let longestPauseSec = 0;
+
+  for (let i = 0; i < segments.length - 1; i++) {
+    const current = segments[i];
+    const next = segments[i + 1];
+    if (!current || !next) continue;
+
+    const gap = next.start - current.end;
+    if (gap >= thresholdSec) {
+      pauseCount++;
+      const roundedGap = Math.round(gap * 10) / 10;
+      totalPauseDurationSec += roundedGap;
+      if (roundedGap > longestPauseSec) {
+        longestPauseSec = roundedGap;
+      }
+    }
+  }
+
+  return {
+    pauseCount,
+    totalPauseDurationSec: Math.round(totalPauseDurationSec * 10) / 10,
+    longestPauseSec,
+  };
+}
+
+/**
  * Основная функция анализа fillers.
  */
 export function analyzeFillers(input: FillerAnalysisInput): FillerAnalysisResult {
-  const { normalizedTranscript, audioDurationSec, customFillers = [], language = 'ru' } = input;
+  const {
+    normalizedTranscript,
+    audioDurationSec,
+    customFillers = [],
+    language = 'ru',
+    segments,
+  } = input;
 
   const normalized = normalizeText(normalizedTranscript);
   const tokens = tokenize(normalized);
@@ -141,6 +196,7 @@ export function analyzeFillers(input: FillerAnalysisInput): FillerAnalysisResult
   const dict = getFillers(language);
   const fillerTokenSet = new Set<string>([...dict, ...customFillers].flatMap((f) => f.split(' ')));
   const repeatedWords = findRepeatedWords(tokens, fillerTokenSet);
+  const pauseMetrics = calculatePauseMetrics(segments);
 
   return {
     totalWords,
@@ -150,5 +206,6 @@ export function analyzeFillers(input: FillerAnalysisInput): FillerAnalysisResult
     speechRate,
     topFillers: limitedTopFillers,
     repeatedWords,
+    pauseMetrics,
   };
 }

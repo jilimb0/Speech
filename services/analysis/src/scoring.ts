@@ -38,7 +38,11 @@ function getScoreLabel(score: number): string {
 }
 
 function buildAdvice(input: ScoringInput): string {
-  const { topFillers, speechRate, fillersPerMinute } = input;
+  const { topFillers, speechRate, fillersPerMinute, pauseMetrics } = input;
+
+  if (pauseMetrics && pauseMetrics.pauseCount >= 3) {
+    return `Замечено ${pauseMetrics.pauseCount} затяжных пауз зависания (до ${pauseMetrics.longestPauseSec} сек). Попробуй заранее формировать мысль перед фразой.`;
+  }
 
   if (topFillers.length === 0) {
     return 'Отличная работа — слов-паразитов почти нет. Попробуй поработать над темпом и паузами.';
@@ -62,7 +66,7 @@ function buildAdvice(input: ScoringInput): string {
 }
 
 export function calculateScore(input: ScoringInput): ScoringResult {
-  const { fillersPerMinute, speechRate, topFillers, totalFillers } = input;
+  const { fillersPerMinute, speechRate, topFillers, totalFillers, pauseMetrics } = input;
 
   let score = BASE_SCORE;
 
@@ -82,6 +86,12 @@ export function calculateScore(input: ScoringInput): ScoringResult {
     if (dominance > DOMINANCE_THRESHOLD) {
       score -= DOMINANCE_PENALTY;
     }
+  }
+
+  // Мягкий штраф за чрезмерные паузы зависания (>2 пауз)
+  if (pauseMetrics && pauseMetrics.pauseCount > 2) {
+    const pausePenalty = Math.min(10, Math.floor(pauseMetrics.pauseCount / 2) * 2);
+    score -= pausePenalty;
   }
 
   const finalScore = Math.max(SCORE_FLOOR, Math.min(100, score));

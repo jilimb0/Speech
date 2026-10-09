@@ -31,6 +31,21 @@ export interface Session {
   sessionScore: number;
   summaryText: string;
   advice: string;
+  pauseMetrics?:
+    | {
+        pauseCount: number;
+        totalPauseDurationSec: number;
+        longestPauseSec: number;
+      }
+    | undefined;
+  exercises?:
+    | Array<{
+        title: string;
+        description: string;
+        targetFiller?: string | undefined;
+        practiceText?: string | undefined;
+      }>
+    | undefined;
   createdAt: Date;
 }
 
@@ -50,6 +65,21 @@ export interface CreateSessionInput {
   sessionScore: number;
   summaryText: string;
   advice: string;
+  pauseMetrics?:
+    | {
+        pauseCount: number;
+        totalPauseDurationSec: number;
+        longestPauseSec: number;
+      }
+    | undefined;
+  exercises?:
+    | Array<{
+        title: string;
+        description: string;
+        targetFiller?: string | undefined;
+        practiceText?: string | undefined;
+      }>
+    | undefined;
 }
 
 export interface SessionListItem {

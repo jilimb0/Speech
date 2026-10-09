@@ -65,3 +65,19 @@ export async function getUserById(id: string): Promise<User | null> {
   const row = rows[0];
   return row ? rowToUser(row) : null;
 }
+
+export async function updateUserPlan(telegramUserId: number, plan: User['plan']): Promise<User> {
+  const sql = getDb();
+
+  const rows = await sql<UserRow[]>`
+    UPDATE users
+    SET plan = ${plan},
+        last_seen_at = NOW()
+    WHERE telegram_user_id = ${telegramUserId}
+    RETURNING *
+  `;
+
+  const row = rows[0];
+  if (!row) throw new Error(`User with telegram ID ${telegramUserId} not found`);
+  return rowToUser(row);
+}

@@ -16,6 +16,15 @@ export function registerCallbackRouter(bot: BotClient): void {
       return;
     }
 
+    if (data === 'buy_pro') {
+      await bot.answerCallbackQuery(query.id);
+      if (query.message) {
+        const { handlePro } = await import('../handlers/commands.js');
+        await handlePro(bot, query.message);
+      }
+      return;
+    }
+
     await bot.answerCallbackQuery(query.id);
   });
 }

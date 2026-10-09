@@ -12,4 +12,7 @@ export const config = {
   speechProvider: getEnv('SPEECH_PROVIDER', 'managed'),
   fasterWhisperUrl: getEnv('FASTER_WHISPER_URL', 'http://localhost:8001'),
   premiumStarPrice: Number(getEnv('PREMIUM_STAR_PRICE', '50')),
+  aiBaseUrl: getEnv('AI_BASE_URL', getEnv('OPENCODE_API_URL', 'https://api.opencode.ai/v1')),
+  aiApiKey: getEnv('AI_API_KEY', getEnv('OPENCODE_API_KEY', '')),
+  aiModel: getEnv('AI_MODEL', 'gpt-4o-mini'),
 } as const;

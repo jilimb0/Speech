@@ -9,5 +9,6 @@ export {
 export {
   getUserById,
   getUserByTelegramId,
+  updateUserPlan,
   upsertUser,
 } from './user-service.js';
