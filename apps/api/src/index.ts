@@ -38,6 +38,7 @@ await logger.register(sessionRoutes);
 await logger.register(paymentRoutes);
 
 logger.get('/health', async () => ({ ok: true, ts: new Date().toISOString() }));
+logger.get('/api/health', async () => ({ ok: true, ts: new Date().toISOString() }));
 
 // Start Telegram bot (polling)
 await createBot();

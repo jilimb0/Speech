@@ -4,7 +4,7 @@ export const config = {
   port: Number(getEnv('PORT', '3000')),
   host: getEnv('HOST', '0.0.0.0'),
   telegramBotToken: requireEnv('TELEGRAM_BOT_TOKEN'),
-  telegramBotUsername: requireEnv('TELEGRAM_BOT_USERNAME'),
+  telegramBotUsername: getEnv('TELEGRAM_BOT_USERNAME', 'clean_speech_bot'),
   webAppUrl: requireEnv('WEB_APP_URL'),
   freeDailySessionLimit: Number(getEnv('FREE_DAILY_SESSION_LIMIT', '2')),
   minAudioDurationSec: Number(getEnv('MIN_AUDIO_DURATION_SEC', '15')),
