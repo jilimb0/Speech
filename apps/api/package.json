@@ -19,7 +19,7 @@
     "@speech/sessions": "workspace:*",
     "@speech/shared": "workspace:*",
     "@speech/speech": "workspace:*",
-    "@tgwrapper/core": "^0.18.0",
+    "@tgwrapper/core": "^0.20.1",
     "fastify": "^5.2.1",
     "pino": "^10.3.1"
   },

@@ -51,8 +51,8 @@ importers:
         specifier: workspace:*
         version: link:../../services/speech
       '@tgwrapper/core':
-        specifier: ^0.18.0
-        version: 0.18.0
+        specifier: ^0.20.1
+        version: 0.20.1
       fastify:
         specifier: ^5.2.1
         version: 5.8.5
@@ -560,8 +560,8 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@tgwrapper/core@0.18.0':
-    resolution: {integrity: sha512-sgRXIX/SboYY1PpWaDcUKB5eibEgQE6AX4+itBxYN1ujGd4CJwv6unzqzg3bI8r54OvRzjvEQScaxlPxxaIYVw==}
+  '@tgwrapper/core@0.20.1':
+    resolution: {integrity: sha512-Obti1Jt09WdUmnCSu5FEBrEThRiL0gMeif412a888GrxlQ6E/K0PR9sd7BDVoTcpqkflC+rU64FmRS9ySmA3ew==}
     engines: {node: '>=24.0'}
 
   '@tybys/wasm-util@0.10.3':
@@ -2382,7 +2382,7 @@ snapshots:
       '@types/react': 19.2.17
       '@types/react-dom': 19.2.3(@types/react@19.2.17)
 
-  '@tgwrapper/core@0.18.0': {}
+  '@tgwrapper/core@0.20.1': {}
 
   '@tybys/wasm-util@0.10.3':
     dependencies:
