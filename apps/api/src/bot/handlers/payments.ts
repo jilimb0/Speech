@@ -29,7 +29,8 @@ export function registerPaymentHandlers(bot: BotClient): void {
 
       log.info({ payload, currency, totalAmount }, 'Successful payment received');
 
-      const match = typeof payload === 'string' ? payload.match(/^premium_(\d+)_/) : null;
+      const match =
+        typeof payload === 'string' ? payload.match(/^(?:premium|pro_user)_(\d+)_/) : null;
       if (match) {
         const telegramUserId = Number(match[1]);
         await upsertUser({
