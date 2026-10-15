@@ -1,5 +1,5 @@
 import type { SessionListItem } from '@speech/shared';
-import { Badge, Button, Skeleton, Text } from '@ui-construction-library/core';
+import { Badge, Button, Card, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -88,39 +88,39 @@ export function HistoryScreen() {
       )}
 
       {!loading && !error && sessions.length > 0 && (
-        <ul>
+        <div className="p-4 flex flex-col gap-2.5">
           {sessions.map((s) => (
-            <li key={s.id}>
-              <button
-                type="button"
-                onClick={() => navigate(`/session/${s.id}`)}
-                className="w-full text-left px-4 py-3.5 border-b border-[var(--tg-theme-secondary-bg-color)] active:bg-[var(--tg-theme-secondary-bg-color)] transition-colors"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <Text className="text-[15px]">{formatDate(s.createdAt)}</Text>
-                  <ScoreBadge score={s.sessionScore} />
-                </div>
-                <div className="flex items-center gap-3">
-                  <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
-                    {s.audioDurationSec} {t.history.sec}
-                  </Text>
-                  <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
-                    {s.totalFillers} {t.history.fillers}
-                    {s.topFiller ? (
-                      <>
-                        {' '}
-                        ·{' '}
-                        <Badge variant="default" className="text-xs">
-                          «{s.topFiller.filler}»
-                        </Badge>
-                      </>
-                    ) : null}
-                  </Text>
-                </div>
-              </button>
-            </li>
+            <Card
+              key={s.id}
+              elevation="flat"
+              interactive
+              onClick={() => navigate(`/session/${s.id}`)}
+              className="w-full text-left p-3.5 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl border-0 active:opacity-80 transition-opacity cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <Text className="text-[15px] font-medium">{formatDate(s.createdAt)}</Text>
+                <ScoreBadge score={s.sessionScore} />
+              </div>
+              <div className="flex items-center gap-3">
+                <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
+                  {s.audioDurationSec} {t.history.sec}
+                </Text>
+                <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
+                  {s.totalFillers} {t.history.fillers}
+                  {s.topFiller ? (
+                    <>
+                      {' '}
+                      ·{' '}
+                      <Badge variant="default" className="text-xs">
+                        «{s.topFiller.filler}»
+                      </Badge>
+                    </>
+                  ) : null}
+                </Text>
+              </div>
+            </Card>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

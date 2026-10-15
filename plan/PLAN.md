@@ -68,3 +68,9 @@
    - Либо OpenAI API ключ: `OPENAI_API_KEY` при `SPEECH_PROVIDER=managed`.
 4. **OpenCode AI / Локальная LLM:**
    - Если требуется вызов LLM вместо встроенного локального эвристического генератора ораторских техник — указать `OPENCODE_API_KEY` (или локальный Ollama endpoint `AI_BASE_URL=http://localhost:11434/v1`).
+
+
+## Биллинг: альтернативная оплата (обновлено)
+- [ ] Добавить CryptoBot (USDT) как альтернативу основному шлюзу в веб/Mini App версии (для пользователей без карт).
+- Основной шлюз: Paddle (веб) / Telegram Stars (внутри Telegram; на iOS цифровые товары внутри приложения только через Stars, CryptoBot — внешней ссылкой).
+- Общий план: MASTER_ECOSYSTEM_ROADMAP.md, Категория 1.

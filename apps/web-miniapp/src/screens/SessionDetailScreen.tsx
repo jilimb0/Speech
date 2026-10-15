@@ -10,10 +10,13 @@ import { useTranslation } from '../i18n/index.js';
 
 function MetricCard({ value, label }: { value: string | number; label: string }) {
   return (
-    <div className="flex flex-col gap-1 p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl">
+    <Card
+      elevation="flat"
+      className="flex flex-col gap-1 p-3 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl border-0"
+    >
       <Text className="text-xl font-semibold">{value}</Text>
       <Text className="text-xs text-[var(--tg-theme-hint-color)] leading-tight">{label}</Text>
-    </div>
+    </Card>
   );
 }
 
@@ -186,9 +189,12 @@ export function SessionDetailScreen() {
       <hr className="mx-4 border-[var(--tg-theme-secondary-bg-color)]" />
 
       <section className="p-4">
-        <div className="bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl p-4">
+        <Card
+          elevation="flat"
+          className="bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl p-4 border-0"
+        >
           <Text className="text-[15px] leading-relaxed">💡 {session.advice}</Text>
-        </div>
+        </Card>
       </section>
     </div>
   );

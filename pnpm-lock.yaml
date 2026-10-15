@@ -72,11 +72,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/shared
       '@ui-construction-library/core':
-        specifier: ^0.1.2
-        version: 0.1.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^0.9.0
+        version: 0.9.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@ui-construction-library/icons':
+        specifier: ^0.6.0
+        version: 0.6.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@ui-construction-library/tokens':
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.6.0
+        version: 0.6.0
       react:
         specifier: ^19.2.7
         version: 19.2.7
@@ -590,61 +593,38 @@ packages:
   '@types/react@19.2.17':
     resolution: {integrity: sha512-MXfmqaVPEVgkBT/aY0aGCkRWWtByiYQXo3xdQ8r5RzuFrPiRn8Gar2tQdXSUQ2GKV3bkXckek89V8wQBY2Q/Aw==}
 
-  '@ui-construction-library/behaviors@0.1.0':
-    resolution: {integrity: sha512-rjqll5CBs9LDJ5gNBmcNbFoLXdqhRihXjHr7g1dzry5m8qO9QFbYwFJA86wmtMyKD02yTLpwiyQwzJlHGZv5Og==}
+  '@ui-construction-library/behaviors@0.6.0':
+    resolution: {integrity: sha512-fQOzIG08ExvpuHQODV/mqkThsw6dEcoV5PB4EJ65LnKUGhOB7kQnIQERQzSI0Ha8Q5k2N1BLL6+Ow2TQ9Vg5Sg==}
+    engines: {node: '>=26.0.0'}
 
-  '@ui-construction-library/core@0.1.2':
-    resolution: {integrity: sha512-1HabjXefGi09X7QZqy4+Jl/GwIazu0D0L39qzWY44QwHTECu8GIrpxeP4kojfAWvX65wCSA93J6SOQWofegeyA==}
+  '@ui-construction-library/core@0.9.0':
+    resolution: {integrity: sha512-f++dsyM3PljwC09nwh51A1V7Ww4x5sXYdYiEVOiP8S9dvnXtcHoWxnu82rrK7Veb84N6JFXRsogTB9GJ84gEHw==}
+    engines: {node: '>=26.0.0'}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ui-construction-library/core@0.2.2':
-    resolution: {integrity: sha512-OOy7LL20avUd77mBtEu3BZcYyY5KoAtz5vDBsNOYLImZkwZXYyOgMT/kBahU264g8cfFnLP8O81DmGth3o81jw==}
+  '@ui-construction-library/icons@0.6.0':
+    resolution: {integrity: sha512-I+HDD3BmZ4oTkXrUWLz2k1FHA7Zt7iQgjp8w90h00dlCipxZU9fPVFPly9aVhJeLF2o+CICUbGHWylZVQy4Qkw==}
+    engines: {node: '>=26.0.0'}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ui-construction-library/dnd@0.1.7':
-    resolution: {integrity: sha512-RSdGNl1KvuKGvnRXcTgr+IlwhU3aISB17lsduy6D4LA9y+eHD4uqDJmP/260oBmCISPd/0HD5bD5I+mYzSb0qA==}
+  '@ui-construction-library/primitives@0.5.0':
+    resolution: {integrity: sha512-p0jZFz7S0fiP7j/SlkBC6fwMJgbMTT0w6SLyDJQyMdS4EvGmEDi6YZLqa2Jg2ns+HMPoFUmaIa9gAj+riDCGHQ==}
+    engines: {node: '>=26.0.0'}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ui-construction-library/icons@0.1.2':
-    resolution: {integrity: sha512-VAojRoKyADJZlBhwzQ00ksZ3om8kWbn8obHaGyJQVgti9+4d1c+zmJ0yHlDC25Cq7trxoiM53+7yO39mLyvdOQ==}
-    peerDependencies:
-      react: '>=18.0.0'
+  '@ui-construction-library/tokens@0.6.0':
+    resolution: {integrity: sha512-QqXKdESn0izKelWFuUNPPlUKporV7TPllQAxXSmVMvVOFweHRmefQv54IMhHfHVFqggbASNZEBPl/4vWcYC+RA==}
+    engines: {node: '>=26.0.0'}
 
-  '@ui-construction-library/icons@0.2.0':
-    resolution: {integrity: sha512-i3PMzTuKwhmVqgmfLpwcMkljG1n2WCIxvCKOY9yfi61+3U+KaNnAtAPwlv3v72gkWNIqkPtiIIq5vKquczeNBQ==}
-    peerDependencies:
-      react: '>=18.0.0'
-      react-dom: '>=18.0.0'
-
-  '@ui-construction-library/motion@0.1.5':
-    resolution: {integrity: sha512-nOxmbgOdcFP6d4JXnjUrA6Q9RvjMbmv6Ez4h+jNtbnlZbrNMOiL823sdlfSIZRYexw76D8WeYQdcMuztOcld6A==}
-    peerDependencies:
-      react: '>=18.0.0'
-      react-dom: '>=18.0.0'
-
-  '@ui-construction-library/primitives@0.1.3':
-    resolution: {integrity: sha512-+CCALsLB4sudwbukqdaoixGOFcJjxw2vO5WXqUUPZYkyS4a2Wb4qTIkSj/VZ/rLzhaJdbZ7ANWqxpU5SQYWkaA==}
-    peerDependencies:
-      react: '>=18.0.0'
-      react-dom: '>=18.0.0'
-
-  '@ui-construction-library/tokens@0.1.1':
-    resolution: {integrity: sha512-ggRSci7PrP5Mgz8aoyvhyHY9D8KKivvX6yu9lgIMdI1Hr/Cfw5ubN1fNodVEok/lbiAzzVrHcikmMT9GCjkqjw==}
-
-  '@ui-construction-library/tokens@0.2.0':
-    resolution: {integrity: sha512-c9/FZylrYjl5I4QnG3bVEeTdanI0ayjWRd4oYjz/t0XKacYid/15K5h7GDAJQpyV+sn4VIgwm+lXttBQe/9zpA==}
-
-  '@ui-construction-library/utils@0.1.3':
-    resolution: {integrity: sha512-pZxqBV0n1EFPrhl0JuGaCSzjuGBai73wsp2bjB8CZAXqsJ69DbgBM2wIlpLZoICbmpqpy6IJu11wmxrVM9/CNg==}
-
-  '@ui-construction-library/utils@0.2.0':
-    resolution: {integrity: sha512-xBxKWQ6SFpSRhgWlmNpqSbHrdB+EB5njnTJkZYBkPjmP2bbosE3R684BGX1TjKm+rlZzgP7SAUQTtYIyoG7hVQ==}
+  '@ui-construction-library/utils@0.5.0':
+    resolution: {integrity: sha512-wygITIp9fesEsNpCVwZZUsvwXQR+BBOcLg7u9Lln3Pa5quToWqTtxV4cxjw0cq1gLqu9bMmCDdPVWCQMwcKlUQ==}
+    engines: {node: '>=26.0.0'}
 
   '@vitejs/plugin-react@6.0.3':
     resolution: {integrity: sha512-vmFvco5/QuC2f9Oj+wTk0+9XeDFkHxSamwZKYc7MxYwKICfvUvlMhqKI0VuICPltGqh1neqBKDvO4kes1ya8vg==}
@@ -2412,16 +2392,15 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
-  '@ui-construction-library/behaviors@0.1.0': {}
+  '@ui-construction-library/behaviors@0.6.0': {}
 
-  '@ui-construction-library/core@0.1.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@ui-construction-library/core@0.9.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      '@ui-construction-library/dnd': 0.1.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@ui-construction-library/icons': 0.1.2(react@19.2.7)
-      '@ui-construction-library/motion': 0.1.5(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@ui-construction-library/primitives': 0.1.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@ui-construction-library/tokens': 0.1.1
-      '@ui-construction-library/utils': 0.1.3
+      '@ui-construction-library/behaviors': 0.6.0
+      '@ui-construction-library/icons': 0.6.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@ui-construction-library/primitives': 0.5.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@ui-construction-library/tokens': 0.6.0
+      '@ui-construction-library/utils': 0.5.0
       class-variance-authority: 0.7.1
       clsx: 2.1.1
       react: 19.2.7
@@ -2429,53 +2408,20 @@ snapshots:
       tailwind-merge: 2.6.1
       zod: 3.25.76
 
-  '@ui-construction-library/core@0.2.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
-    dependencies:
-      '@ui-construction-library/icons': 0.2.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@ui-construction-library/primitives': 0.1.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@ui-construction-library/tokens': 0.2.0
-      '@ui-construction-library/utils': 0.2.0
-      class-variance-authority: 0.7.1
-      clsx: 2.1.1
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
-      tailwind-merge: 2.6.1
-      zod: 3.25.76
-
-  '@ui-construction-library/dnd@0.1.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
-    dependencies:
-      '@ui-construction-library/core': 0.2.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
-
-  '@ui-construction-library/icons@0.1.2(react@19.2.7)':
-    dependencies:
-      react: 19.2.7
-
-  '@ui-construction-library/icons@0.2.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@ui-construction-library/icons@0.6.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
 
-  '@ui-construction-library/motion@0.1.5(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@ui-construction-library/primitives@0.5.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      '@ui-construction-library/core': 0.2.2(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@ui-construction-library/behaviors': 0.6.0
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
 
-  '@ui-construction-library/primitives@0.1.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
-    dependencies:
-      '@ui-construction-library/behaviors': 0.1.0
-      react: 19.2.7
-      react-dom: 19.2.7(react@19.2.7)
+  '@ui-construction-library/tokens@0.6.0': {}
 
-  '@ui-construction-library/tokens@0.1.1': {}
-
-  '@ui-construction-library/tokens@0.2.0': {}
-
-  '@ui-construction-library/utils@0.1.3': {}
-
-  '@ui-construction-library/utils@0.2.0': {}
+  '@ui-construction-library/utils@0.5.0': {}
 
   '@vitejs/plugin-react@6.0.3(vite@8.1.0(@types/node@22.20.0)(jiti@1.21.7)(yaml@2.9.0))':
     dependencies:

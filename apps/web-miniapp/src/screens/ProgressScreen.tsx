@@ -1,5 +1,5 @@
 import type { ProgressSummary } from '@speech/shared';
-import { Button, Skeleton, Text } from '@ui-construction-library/core';
+import { Button, Card, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -15,7 +15,10 @@ interface StatCardProps {
 
 function StatCard({ value, label, valueColor }: StatCardProps) {
   return (
-    <div className="flex flex-col gap-1.5 p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl">
+    <Card
+      elevation="flat"
+      className="flex flex-col gap-1.5 p-4 bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl border-0"
+    >
       <Text
         className="text-3xl font-bold leading-none"
         style={valueColor ? { color: valueColor } : undefined}
@@ -23,7 +26,7 @@ function StatCard({ value, label, valueColor }: StatCardProps) {
         {value}
       </Text>
       <Text className="text-xs text-[var(--tg-theme-hint-color)] leading-snug">{label}</Text>
-    </div>
+    </Card>
   );
 }
 
