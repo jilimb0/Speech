@@ -85,6 +85,34 @@ function buildReport(
   return `*Результат анализа*\n\n⏱ Длительность: ${durationSec} сек\n🔤 Слов-паразитов: ${analysis.totalFillers}\n📌 Чаще всего: ${topFillersText}\n🎙 Темп: ${rateLabel}${pausesText}\n${scoreEmoji(scoring.sessionScore)} Оценка: ${scoring.sessionScore}/100\n\n💡 ${scoring.advice}${exerciseText}`;
 }
 
+const MAX_AUDIO_FILE_SIZE = 20 * 1024 * 1024; // 20MB limit
+const ALLOWED_MIME_PREFIXES = ['audio/', 'video/mp4', 'video/ogg'];
+
+function isValidAudioBuffer(buf: Buffer): boolean {
+  if (buf.length < 12) return false;
+  const b0 = buf[0];
+  const b1 = buf[1];
+  const b2 = buf[2];
+  const b3 = buf[3];
+  const b4 = buf[4];
+  const b5 = buf[5];
+  const b6 = buf[6];
+  const b7 = buf[7];
+
+  // OGG: starts with OggS
+  if (b0 === 0x4f && b1 === 0x67 && b2 === 0x67 && b3 === 0x53) return true;
+  // WAV: starts with RIFF
+  if (b0 === 0x52 && b1 === 0x49 && b2 === 0x46 && b3 === 0x46) return true;
+  // MP3: ID3 header or sync frame 0xFF 0xE0+
+  if (b0 === 0x49 && b1 === 0x44 && b2 === 0x33) return true;
+  if (b0 === 0xff && b1 !== undefined && (b1 & 0xe0) === 0xe0) return true;
+  // MP4 / M4A: ftyp at offset 4
+  if (b4 === 0x66 && b5 === 0x74 && b6 === 0x79 && b7 === 0x70) return true;
+  // FLAC: fLaC
+  if (b0 === 0x66 && b1 === 0x4c && b2 === 0x61 && b3 === 0x43) return true;
+  return false;
+}
+
 async function downloadVoice(fileId: string): Promise<string> {
   const api = getApiClient();
   const fileInfo = (await api.callApiUnsafe('getFile', { file_id: fileId })) as {
@@ -98,6 +126,14 @@ async function downloadVoice(fileId: string): Promise<string> {
   if (!res.ok) throw new Error(`Failed to download file: ${res.status}`);
 
   const buffer = Buffer.from(await res.arrayBuffer());
+  if (buffer.length > MAX_AUDIO_FILE_SIZE) {
+    throw new Error('Downloaded audio exceeds maximum permitted size of 20MB');
+  }
+
+  if (!isValidAudioBuffer(buffer)) {
+    throw new Error('Downloaded file does not match any recognized audio format headers');
+  }
+
   const tempPath = join(tmpdir(), `speech_${Date.now()}_${fileId}.ogg`);
   await writeFile(tempPath, buffer);
   return tempPath;
@@ -261,6 +297,22 @@ export async function handleVoiceMessage(
     await bot.sendMessage(
       chatId,
       `Запись слишком длинная. Оптимально — 30–60 секунд, максимум ${config.maxAudioDurationSec} секунд.`,
+    );
+    return;
+  }
+
+  if (voice.file_size && voice.file_size > MAX_AUDIO_FILE_SIZE) {
+    await bot.sendMessage(chatId, 'Аудиофайл слишком большой. Максимальный размер — 20 МБ.');
+    return;
+  }
+
+  if (
+    voice.mime_type &&
+    !ALLOWED_MIME_PREFIXES.some((prefix) => voice.mime_type?.startsWith(prefix))
+  ) {
+    await bot.sendMessage(
+      chatId,
+      'Неподдерживаемый формат файла. Отправь голосовое сообщение или аудиозапись.',
     );
     return;
   }

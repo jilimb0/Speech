@@ -22,18 +22,31 @@ function extractInitData(request: FastifyRequest): string | undefined {
   return undefined;
 }
 
+function isPublicRoute(url: string): boolean {
+  const pathname = url.split('?')[0];
+  return pathname === '/health' || pathname === '/api/health';
+}
+
+function shouldAllowDevBypass(initData: string | undefined): boolean {
+  if (process.env.NODE_ENV === 'production') return false;
+  if (process.env.NODE_ENV === 'test') return true;
+  const isDev = process.env.NODE_ENV === 'development' || process.env.DEV_MODE === 'true';
+  return isDev && (initData === 'dev' || process.env.ALLOW_DEV_AUTH_BYPASS === 'true');
+}
+
 /**
  * Registers TMA authentication hook on Fastify instance.
  * Uses official @tgwrapper/core/tma HMAC-SHA256 cryptographic verification.
  */
 export async function registerTmaAuth(app: FastifyInstance): Promise<void> {
-  const isDev = process.env.NODE_ENV === 'development' || process.env.DEV_MODE === 'true';
-
   app.addHook('preHandler', async (request, reply) => {
+    if (isPublicRoute(request.url)) {
+      return;
+    }
+
     const initData = extractInitData(request);
 
-    // Dev mode: allow bypass for local browser testing
-    if (isDev && (!initData || initData === 'dev')) {
+    if (shouldAllowDevBypass(initData)) {
       request.telegramUserId = DEV_TELEGRAM_USER_ID;
       request.telegramUser = { id: DEV_TELEGRAM_USER_ID, firstName: 'DevUser' };
       return;
