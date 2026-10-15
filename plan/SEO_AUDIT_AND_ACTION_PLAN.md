@@ -20,10 +20,8 @@
 
 ## 2. Пошаговый план внедрения (Action Plan)
 
-- [ ] **Шаг 1 (P0): Закрытие Mini App от случайной индексации в `apps/web-miniapp/index.html`**
-  ```html
-  <meta name="robots" content="noindex, nofollow" />
-  ```
+- [x] **Шаг 1 (P0): Закрытие Mini App от случайной индексации в `apps/web-miniapp/index.html`**
+  - Добавлен метатег `<meta name="robots" content="noindex, nofollow" />`.
 
 - [ ] **Шаг 2 (P1): Создание промо-лендинга для привлечения органического трафика (Growth)**
   - Разместить статический лендинг с оптимизацией по поисковым фразам:
