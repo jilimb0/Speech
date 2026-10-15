@@ -8,6 +8,7 @@ import { useTranslation } from '../i18n/index.js';
 
 export function PremiumScreen() {
   const { t } = useTranslation();
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'vip'>('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,8 +16,27 @@ export function PremiumScreen() {
     setLoading(true);
     setError(null);
     try {
-      const { link } = await api.createInvoice();
-      window.open(link, '_blank');
+      const { link } = await api.createInvoice(selectedPlan);
+      const tg = (
+        window as unknown as {
+          Telegram?: {
+            WebApp?: {
+              openInvoice?: (url: string, callback?: (status: string) => void) => void;
+            };
+          };
+        }
+      ).Telegram?.WebApp;
+
+      if (tg?.openInvoice) {
+        tg.openInvoice(link, (status) => {
+          if (status === 'paid') {
+            alert('🎉 Оплата Telegram Stars успешно завершена! Speech Pro активирован.');
+            window.location.reload();
+          }
+        });
+      } else {
+        window.open(link, '_blank');
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t.premium.paymentError);
     } finally {
@@ -41,7 +61,7 @@ export function PremiumScreen() {
         </Text>
       </div>
 
-      <section className="px-6 pb-6">
+      <section className="px-6 pb-4">
         <Card
           elevation="flat"
           className="bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl p-4 border-0"
@@ -57,13 +77,63 @@ export function PremiumScreen() {
         </Card>
       </section>
 
+      {/* Package Selection */}
+      <section className="px-6 pb-6 flex flex-col gap-3">
+        <Text className="text-xs font-semibold text-[var(--tg-theme-hint-color)] uppercase tracking-wider">
+          Выберите тариф (Telegram Stars)
+        </Text>
+        <div className="grid grid-cols-2 gap-3">
+          <Card
+            elevation="flat"
+            interactive
+            onClick={() => setSelectedPlan('monthly')}
+            className={`p-3.5 rounded-xl text-left border cursor-pointer transition-all ${
+              selectedPlan === 'monthly'
+                ? 'border-[var(--tg-theme-button-color,#2481cc)] bg-[var(--tg-theme-secondary-bg-color)] ring-2 ring-[var(--tg-theme-button-color,#2481cc)]'
+                : 'border-transparent bg-[var(--tg-theme-secondary-bg-color)] opacity-70'
+            }`}
+          >
+            <div className="flex justify-between items-start mb-1">
+              <Text className="text-xs font-medium text-[var(--tg-theme-hint-color)]">30 дней</Text>
+              <Badge variant="default" className="text-[10px]">
+                50 ⭐
+              </Badge>
+            </div>
+            <Text className="text-lg font-bold leading-none mb-1">Speech Pro</Text>
+            <Text className="text-xs text-[var(--tg-theme-hint-color)]">Безлимитный разбор</Text>
+          </Card>
+
+          <Card
+            elevation="flat"
+            interactive
+            onClick={() => setSelectedPlan('vip')}
+            className={`p-3.5 rounded-xl text-left border cursor-pointer transition-all ${
+              selectedPlan === 'vip'
+                ? 'border-[var(--tg-theme-button-color,#2481cc)] bg-[var(--tg-theme-secondary-bg-color)] ring-2 ring-[var(--tg-theme-button-color,#2481cc)]'
+                : 'border-transparent bg-[var(--tg-theme-secondary-bg-color)] opacity-70'
+            }`}
+          >
+            <div className="flex justify-between items-start mb-1">
+              <Text className="text-xs font-medium text-[var(--tg-theme-hint-color)]">1 год</Text>
+              <Badge variant="warning" className="text-[10px]">
+                250 ⭐
+              </Badge>
+            </div>
+            <Text className="text-lg font-bold leading-none mb-1">VIP Год</Text>
+            <Text className="text-xs text-[var(--tg-theme-hint-color)]">Приоритет Whisper</Text>
+          </Card>
+        </div>
+      </section>
+
       <section className="px-6 flex flex-col gap-3">
         <Button
           className="w-full py-3 text-base font-semibold rounded-xl"
           disabled={loading}
           onClick={handleBuy}
         >
-          {loading ? t.premium.buying : t.premium.buy}
+          {loading
+            ? t.premium.buying
+            : `Оплатить ${selectedPlan === 'monthly' ? '50' : '250'} ⭐ через Telegram Stars`}
         </Button>
         {error && <Text className="text-xs text-center text-[#ff3b30]">{error}</Text>}
       </section>

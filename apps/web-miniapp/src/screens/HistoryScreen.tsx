@@ -1,5 +1,5 @@
 import type { SessionListItem } from '@speech/shared';
-import { Badge, Button, Card, Skeleton, Text } from '@ui-construction-library/core';
+import { Badge, Button, Card, DataTable, Skeleton, Text } from '@ui-construction-library/core';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client.js';
@@ -22,6 +22,7 @@ export function HistoryScreen() {
   const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
 
   useEffect(() => {
     api
@@ -31,14 +32,80 @@ export function HistoryScreen() {
       .finally(() => setLoading(false));
   }, [t.history.loadError]);
 
+  const tableColumns = [
+    {
+      key: 'createdAt',
+      header: 'Дата',
+      sortable: true,
+      render: (s: SessionListItem) => (
+        <span className="text-xs font-medium">{formatDate(s.createdAt)}</span>
+      ),
+    },
+    {
+      key: 'audioDurationSec',
+      header: 'Время',
+      sortable: true,
+      render: (s: SessionListItem) => <span className="text-xs">{s.audioDurationSec} с</span>,
+    },
+    {
+      key: 'totalFillers',
+      header: 'Паразиты',
+      sortable: true,
+      render: (s: SessionListItem) => (
+        <span className="text-xs">
+          {s.totalFillers}
+          {s.topFiller ? ` («${s.topFiller.filler}»)` : ''}
+        </span>
+      ),
+    },
+    {
+      key: 'sessionScore',
+      header: 'Балл',
+      sortable: true,
+      render: (s: SessionListItem) => <ScoreBadge score={s.sessionScore} />,
+    },
+    {
+      key: 'actions',
+      header: '',
+      render: (s: SessionListItem) => (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => navigate(`/session/${s.id}`)}
+          className="text-xs px-2 py-1 h-auto"
+        >
+          →
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div className="min-h-dvh pb-20">
       <PageHeader
         title={t.history.title}
         right={
-          <Button variant="ghost" size="sm" onClick={() => navigate('/progress')}>
-            {t.history.progress}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="text-xs px-2 py-1"
+            >
+              Таблица
+            </Button>
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('cards')}
+              className="text-xs px-2 py-1"
+            >
+              Карточки
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/progress')}>
+              {t.history.progress}
+            </Button>
+          </div>
         }
       />
 
@@ -88,38 +155,46 @@ export function HistoryScreen() {
       )}
 
       {!loading && !error && sessions.length > 0 && (
-        <div className="p-4 flex flex-col gap-2.5">
-          {sessions.map((s) => (
-            <Card
-              key={s.id}
-              elevation="flat"
-              interactive
-              onClick={() => navigate(`/session/${s.id}`)}
-              className="w-full text-left p-3.5 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl border-0 active:opacity-80 transition-opacity cursor-pointer"
-            >
-              <div className="flex items-center justify-between mb-1">
-                <Text className="text-[15px] font-medium">{formatDate(s.createdAt)}</Text>
-                <ScoreBadge score={s.sessionScore} />
-              </div>
-              <div className="flex items-center gap-3">
-                <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
-                  {s.audioDurationSec} {t.history.sec}
-                </Text>
-                <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
-                  {s.totalFillers} {t.history.fillers}
-                  {s.topFiller ? (
-                    <>
-                      {' '}
-                      ·{' '}
-                      <Badge variant="default" className="text-xs">
-                        «{s.topFiller.filler}»
-                      </Badge>
-                    </>
-                  ) : null}
-                </Text>
-              </div>
-            </Card>
-          ))}
+        <div className="p-4 flex flex-col gap-3">
+          {viewMode === 'table' ? (
+            <div className="bg-[var(--tg-theme-secondary-bg-color)] rounded-xl p-2 overflow-x-auto">
+              <DataTable data={sessions} columns={tableColumns} pageSize={10} />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {sessions.map((s) => (
+                <Card
+                  key={s.id}
+                  elevation="flat"
+                  interactive
+                  onClick={() => navigate(`/session/${s.id}`)}
+                  className="w-full text-left p-3.5 bg-[var(--tg-theme-secondary-bg-color)] rounded-xl border-0 active:opacity-80 transition-opacity cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <Text className="text-[15px] font-medium">{formatDate(s.createdAt)}</Text>
+                    <ScoreBadge score={s.sessionScore} />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
+                      {s.audioDurationSec} {t.history.sec}
+                    </Text>
+                    <Text className="text-[13px] text-[var(--tg-theme-hint-color)]">
+                      {s.totalFillers} {t.history.fillers}
+                      {s.topFiller ? (
+                        <>
+                          {' '}
+                          ·{' '}
+                          <Badge variant="default" className="text-xs">
+                            «{s.topFiller.filler}»
+                          </Badge>
+                        </>
+                      ) : null}
+                    </Text>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
