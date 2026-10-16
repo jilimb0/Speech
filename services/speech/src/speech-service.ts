@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { AudioSegment, TranscriptionStatus } from '@speech/shared';
 
 export interface TranscriptionResult {
@@ -20,6 +22,11 @@ export interface TranscriptionCache {
   set(hash: string, result: TranscriptionResult): Promise<void>;
   has(hash: string): Promise<boolean>;
   clear?(): Promise<void>;
+}
+
+export interface SpeechServiceOptions {
+  cache?: TranscriptionCache;
+  timeoutMs?: number;
 }
 
 /**
@@ -65,14 +72,47 @@ export class InMemoryTranscriptionCache implements TranscriptionCache {
 }
 
 export class SpeechService {
+  private readonly cache: TranscriptionCache | undefined;
+  private readonly timeoutMs: number;
+
   constructor(
     private readonly provider: SpeechRecognitionProvider,
-    private readonly cache?: TranscriptionCache,
-  ) {}
+    cacheOrOptions?: TranscriptionCache | SpeechServiceOptions,
+  ) {
+    if (cacheOrOptions && 'get' in cacheOrOptions) {
+      this.cache = cacheOrOptions;
+      this.timeoutMs = 30_000;
+    } else {
+      this.cache = cacheOrOptions?.cache;
+      this.timeoutMs = cacheOrOptions?.timeoutMs ?? 30_000;
+    }
+  }
+
+  computeAudioHashFromBuffer(buffer: Buffer): string {
+    return createHash('sha256').update(buffer).digest('hex');
+  }
 
   async computeAudioHash(audioFilePath: string): Promise<string> {
     const buffer = await readFile(audioFilePath);
-    return createHash('sha256').update(buffer).digest('hex');
+    return this.computeAudioHashFromBuffer(buffer);
+  }
+
+  private withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new Error(`Transcription timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      promise
+        .then((res) => {
+          clearTimeout(timer);
+          resolve(res);
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
   }
 
   async transcribe(audioFilePath: string): Promise<TranscriptionResult> {
@@ -94,12 +134,40 @@ export class SpeechService {
       }
     }
 
-    const result = await this.provider.transcribe(audioFilePath);
+    const result = await this.withTimeout(this.provider.transcribe(audioFilePath), this.timeoutMs);
 
     if (this.cache && audioHash && result.status !== 'failed') {
       await this.cache.set(audioHash, result);
     }
 
     return result;
+  }
+
+  async transcribeBuffer(buffer: Buffer, fileExt = 'ogg'): Promise<TranscriptionResult> {
+    const audioHash = this.computeAudioHashFromBuffer(buffer);
+
+    if (this.cache) {
+      const cached = await this.cache.get(audioHash);
+      if (cached) {
+        return {
+          ...cached,
+          cached: true,
+          processingTimeMs: 0,
+        };
+      }
+    }
+
+    const tempPath = join(tmpdir(), `speech-${Date.now()}-${audioHash.slice(0, 8)}.${fileExt}`);
+    await writeFile(tempPath, buffer);
+
+    try {
+      const result = await this.withTimeout(this.provider.transcribe(tempPath), this.timeoutMs);
+      if (this.cache && result.status !== 'failed') {
+        await this.cache.set(audioHash, result);
+      }
+      return result;
+    } finally {
+      await rm(tempPath, { force: true });
+    }
   }
 }

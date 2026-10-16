@@ -4,9 +4,11 @@ import type { SpeechRecognitionProvider, TranscriptionResult } from '../speech-s
 
 export class FasterWhisperProvider implements SpeechRecognitionProvider {
   private readonly serviceUrl: string;
+  private readonly timeoutMs: number;
 
-  constructor() {
+  constructor(options?: { timeoutMs?: number }) {
     this.serviceUrl = requireEnv('FASTER_WHISPER_URL');
+    this.timeoutMs = options?.timeoutMs ?? 30_000;
   }
 
   async transcribe(audioFilePath: string): Promise<TranscriptionResult> {
@@ -26,6 +28,7 @@ export class FasterWhisperProvider implements SpeechRecognitionProvider {
     const response = await fetch(`${this.serviceUrl}/transcribe`, {
       method: 'POST',
       body: formData,
+      signal: AbortSignal.timeout(this.timeoutMs),
     });
 
     if (!response.ok) {

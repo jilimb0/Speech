@@ -9,10 +9,12 @@ import type { SpeechRecognitionProvider, TranscriptionResult } from '../speech-s
 export class ManagedWhisperProvider implements SpeechRecognitionProvider {
   private readonly apiKey: string;
   private readonly apiUrl: string;
+  private readonly timeoutMs: number;
 
-  constructor() {
+  constructor(options?: { timeoutMs?: number }) {
     this.apiKey = requireEnv('OPENAI_API_KEY');
     this.apiUrl = 'https://api.openai.com/v1/audio/transcriptions';
+    this.timeoutMs = options?.timeoutMs ?? 30_000;
   }
 
   async transcribe(audioFilePath: string): Promise<TranscriptionResult> {
@@ -40,6 +42,7 @@ export class ManagedWhisperProvider implements SpeechRecognitionProvider {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: formData,
+      signal: AbortSignal.timeout(this.timeoutMs),
     });
 
     if (!response.ok) {
