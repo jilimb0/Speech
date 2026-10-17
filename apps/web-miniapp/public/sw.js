@@ -8,7 +8,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((cached) => {
-      const fetchPromise = fetch(e.request)
+      const fetchPromise = fetch(e.request, { signal: AbortSignal.timeout(10_000) })
         .then((res) => {
           if (res.ok && res.type === 'basic') {
             caches.open(CACHE).then((c) => c.put(e.request, res.clone()));

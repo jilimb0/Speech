@@ -129,7 +129,8 @@ export class SpeechService {
             processingTimeMs: 0,
           };
         }
-      } catch {
+      } catch (err) {
+        console.error('[UDPA-Handled]', err);
         // Если чтение или хэш не удались, продолжаем прямой вызов провайдера
       }
     }

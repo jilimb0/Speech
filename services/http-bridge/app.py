@@ -105,8 +105,8 @@ def handle_transcribe():
         for p in (ogg_path, pcm_path):
             try:
                 os.unlink(p)
-            except OSError:
-                pass
+            except OSError as err:
+                print(f"Failed to unlink {p}: {err}")
 
 
 @app.route("/health", methods=["GET"])

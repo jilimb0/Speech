@@ -122,7 +122,7 @@ async function downloadVoice(fileId: string): Promise<string> {
   if (!filePath) throw new Error('No file_path from Telegram API');
 
   const fileUrl = `${TELEGRAM_FILE_BASE}/${filePath}`;
-  const res = await fetch(fileUrl);
+  const res = await fetch(fileUrl, { signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error(`Failed to download file: ${res.status}`);
 
   const buffer = Buffer.from(await res.arrayBuffer());

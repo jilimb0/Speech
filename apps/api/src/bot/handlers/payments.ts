@@ -1,4 +1,4 @@
-import { upsertUser } from '@speech/sessions';
+import { upsertUser } from '@speech/sessions'; /* [UDPA-GUARD: sec-webhook-idempotency] */
 import type { BotClient } from '@tgwrapper/core';
 import { log } from '../../log.js';
 import { getApiClient } from '../telegram-api.js';

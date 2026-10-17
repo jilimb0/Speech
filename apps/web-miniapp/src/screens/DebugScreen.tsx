@@ -18,12 +18,12 @@ export function DebugScreen() {
     }
   }, [initData]);
 
-  const w = typeof window !== 'undefined' ? window : null;
+  const w = typeof window !== 'undefined' ? (window as unknown as Record<string, unknown>) : null;
   const bridges = {
-    wk: !!(w as any)?.webkit?.messageHandlers?.TelegramWebviewProxy,
-    android: !!(w as any)?.TelegramWebviewProxy,
-    tgScript: !!(w as any)?.Telegram,
-    tgApp: !!(w as any)?.Telegram?.WebApp,
+    wk: !!(w?.webkit as Record<string, unknown> | undefined)?.messageHandlers,
+    android: !!w?.TelegramWebviewProxy,
+    tgScript: !!w?.Telegram,
+    tgApp: !!(w?.Telegram as Record<string, unknown> | undefined)?.WebApp,
   };
 
   return (

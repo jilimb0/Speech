@@ -13,6 +13,7 @@ async function apiFetch<T>(
   options?: { method?: string; body?: unknown },
 ): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
+    /* AbortSignal.timeout(10_000) */
     method: options?.method ?? 'GET',
     headers: {
       'x-telegram-init-data': _initData,

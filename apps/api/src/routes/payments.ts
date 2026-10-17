@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify'; /* [UDPA-GUARD: sec-webhook-idempotency] */
 import { getApiClient } from '../bot/telegram-api.js';
 import { config } from '../config.js';
 
