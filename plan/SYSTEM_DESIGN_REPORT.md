@@ -1,4 +1,4 @@
-# План внедрения System Design и архитектурной устойчивости: Speech
+# Отчет о внедрении System Design и архитектурной устойчивости: Speech
 
 > **Статус:** [x] Имплементировано (100%)  
 > **Область:** Audio Buffer SHA-256 Deduplication Hashing, 30s Whisper Timeout Protection, Exponential Backoff Retries  
