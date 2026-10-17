@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import * as Sentry from '@sentry/node';
 import Fastify from 'fastify';
@@ -28,6 +29,18 @@ await logger.register(cors, {
   origin: process.env.CORS_ORIGIN ?? false,
 });
 
+// Observability and defensive security headers
+logger.addHook('onRequest', async (request, reply) => {
+  const rawCorrelationId = request.headers['x-correlation-id'] || request.headers['x-request-id'];
+  const correlationId = Array.isArray(rawCorrelationId)
+    ? rawCorrelationId[0]
+    : rawCorrelationId || crypto.randomUUID();
+  void reply.header('X-Correlation-ID', correlationId);
+  void reply.header('X-Content-Type-Options', 'nosniff');
+  void reply.header('X-Frame-Options', 'DENY');
+  void reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+});
+
 // Private Network Access: allow public→Tailscale requests
 logger.addHook('onSend', async (_request, reply) => {
   void reply.header('Access-Control-Allow-Private-Network', 'true');
@@ -37,8 +50,10 @@ await registerTmaAuth(logger);
 await logger.register(sessionRoutes);
 await logger.register(paymentRoutes);
 
-logger.get('/health', async () => ({ ok: true, ts: new Date().toISOString() }));
-logger.get('/api/health', async () => ({ ok: true, ts: new Date().toISOString() }));
+logger.get('/health', async () => ({ ok: true, status: 'ok', ts: new Date().toISOString() }));
+logger.get('/healthz', async () => ({ ok: true, status: 'ok', ts: new Date().toISOString() }));
+logger.get('/api/health', async () => ({ ok: true, status: 'ok', ts: new Date().toISOString() }));
+logger.get('/api/healthz', async () => ({ ok: true, status: 'ok', ts: new Date().toISOString() }));
 
 // Start Telegram bot (polling)
 await createBot();
