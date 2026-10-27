@@ -59,6 +59,45 @@ logger.get('/api/healthz', async () => ({ ok: true, status: 'ok', ts: new Date()
 await createBot();
 logger.log.info('Telegram bot started (polling)');
 
+// TTL 24h cleanup for temporary audio files and expired sessions
+const RETENTION_MS = 24 * 60 * 60 * 1000;
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+
+async function runDataRetentionCleanup(): Promise<void> {
+  try {
+    const { cleanupExpiredSessions } = await import('@speech/sessions');
+    const purged = await cleanupExpiredSessions(24);
+    if (purged > 0) {
+      logger.log.info(`[Retention] Purged ${purged} expired sessions`);
+    }
+  } catch {
+    // DB might be in-memory or not initialized in dev
+  }
+
+  try {
+    const { readdir, stat, unlink } = await import('node:fs/promises');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const files = await readdir(tmpdir());
+    const now = Date.now();
+    for (const file of files) {
+      if (file.startsWith('speech-') || file.startsWith('voice-')) {
+        const fullPath = join(tmpdir(), file);
+        try {
+          const s = await stat(fullPath);
+          if (now - s.mtimeMs > RETENTION_MS) {
+            await unlink(fullPath);
+          }
+        } catch {}
+      }
+    }
+  } catch {}
+}
+
+const retentionTimer = setInterval(runDataRetentionCleanup, CLEANUP_INTERVAL_MS);
+if (retentionTimer.unref) retentionTimer.unref();
+void runDataRetentionCleanup();
+
 // Start HTTP server (for Mini App API)
 try {
   await logger.listen({ port: config.port, host: config.host });

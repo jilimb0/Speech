@@ -197,3 +197,21 @@ export async function countTodaySessions(userId: string): Promise<number> {
 
   return Number(row?.count ?? 0);
 }
+
+/**
+ * Purge expired database sessions older than retention period (default 24h)
+ */
+export async function cleanupExpiredSessions(retentionHours = 24): Promise<number> {
+  const sql = getDb();
+
+  const rows = await sql<{ count: number }[]>`
+    WITH deleted AS (
+      DELETE FROM sessions
+      WHERE created_at < NOW() - (${retentionHours} || ' hours')::interval
+      RETURNING id
+    )
+    SELECT COUNT(*) AS count FROM deleted;
+  `;
+
+  return Number(rows[0]?.count ?? 0);
+}

@@ -1,5 +1,6 @@
 export { closeDb, getDb } from './db.js';
 export {
+  cleanupExpiredSessions,
   countTodaySessions,
   createSession,
   getProgressSummary,

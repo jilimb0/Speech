@@ -36,9 +36,7 @@ interface SendMessageResult {
 }
 
 const speechProvider =
-  config.speechProvider === 'faster-whisper'
-    ? new FasterWhisperProvider()
-    : new ManagedWhisperProvider();
+  config.speechProvider === 'managed' ? new ManagedWhisperProvider() : new FasterWhisperProvider();
 
 const transcriptionCache = new InMemoryTranscriptionCache();
 const speechService = new SpeechService(speechProvider, transcriptionCache);
