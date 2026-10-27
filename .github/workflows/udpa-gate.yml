@@ -24,7 +24,8 @@ jobs:
           passport-output: 'udpa-zk-passport.json'
 
       - name: Upload OASIS SARIF to GitHub Security Tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
         if: always()
         with:
           sarif_file: 'udpa-audit.sarif'
