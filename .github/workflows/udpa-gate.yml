@@ -22,13 +22,13 @@ jobs:
       # Advisory until the assay score reaches the 85 target.
       - name: Run UDPA Composite Gate
         uses: jilimb0/udpa-engine@v1
-        continue-on-error: true
         with:
           target-path: '.'
           min-score: '85'
           stage: 'Scale'
           sarif-output: 'udpa-audit.sarif'
           passport-output: 'udpa-zk-passport.json'
+          fail-on-breach: 'false'
 
       - name: Upload OASIS SARIF to GitHub Security Tab
         if: always() && hashFiles('udpa-audit.sarif') != ''
