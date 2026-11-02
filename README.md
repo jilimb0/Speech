@@ -8,7 +8,7 @@ Telegram Mini App for speech filler-word analysis. Users send voice messages, bo
 |---------|-------------|------|
 | `@speech/api` | Fastify HTTP server + Telegram bot webhook | Fastify 5, @tgwrapper |
 | `@speech/bot` | Standalone bot (dev polling) | @tgwrapper |
-| `@speech/web-miniapp` | React SPA (history, detail, progress) | React 18, Vite 6, Tailwind |
+| `@speech/web-miniapp` | React SPA (history, detail, progress) | React 19, Vite 8, Tailwind |
 | `@speech/analysis` | Filler detection, scoring, speech rate | Core logic |
 | `@speech/sessions` | Session + user management | PostgreSQL (raw) |
 | `@speech/speech` | STT abstraction layer | Whisper provider pattern |
@@ -39,4 +39,4 @@ Copy `.env.example` to `.env` and configure:
 
 ## Tests
 
-20 tests across analysis (filler analysis + scoring). Run with `pnpm test`.
+79 tests across API, services, and web-miniapp (65 backend/services + 14 web-miniapp). Run with `pnpm test`.

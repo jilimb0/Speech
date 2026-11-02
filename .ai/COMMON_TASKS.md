@@ -2,9 +2,11 @@
 
 ## 1. Standard Commands
 - **Start dev:** `pnpm dev` — Starts development server.
+- **Validate:** `pnpm validate` — Builds packages, runs typecheck, and runs Biome lint.
 - **Typecheck:** `pnpm typecheck` — Runs TypeScript strict checks.
-- **Run tests:** `pnpm test` — Executes test runner.
+- **Run tests:** `pnpm test` — Executes test runner across all packages.
 - **Lint:** `pnpm lint` — Checks code style with Biome.
+- **Build Web:** `pnpm build:web` — Builds Telegram Mini App SPA.
 
 ## 2. Recipe: Adding a New Feature
 1. Review requirements against invariants in `.ai/ARCHITECTURE.md`.

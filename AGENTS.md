@@ -8,7 +8,7 @@ Telegram Mini App for speech filler-word analysis. Users send voice messages, bo
 | Monorepo | pnpm workspaces (`@speech/*`) |
 | API | Fastify 5 (TypeScript) |
 | Bot | Telegram via `@jilimb0/tgwrapper` |
-| Frontend | React 18 + Vite 6 + react-router-dom 6 + Tailwind CSS |
+| Frontend | React 19 + Vite 8 + react-router-dom 6 + Tailwind CSS |
 | Database | PostgreSQL (raw `postgres` driver) |
 | STT | Whisper (provider pattern) |
 | Tests | Vitest |

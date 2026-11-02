@@ -1,0 +1,23 @@
+#!/bin/sh
+# commit-msg gate: strip AI co-authorship footers from every commit message.
+# Agents (Codex, Claude, OpenCode) append trailers like:
+#   Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+#   Generated with Claude Code /  footers
+# This repo does not want them. The hook deletes those lines in place so the
+# commit lands clean no matter which tool authored it.
+set -e
+
+MSG_FILE="$1"
+[ -n "$MSG_FILE" ] && [ -f "$MSG_FILE" ] || exit 0
+
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+
+perl -ne 'print unless /^\s*Co-Authored-By:/i
+  or /^\s*Generated with /i
+  or /^\xF0\x9F\xA4\x96/' "$MSG_FILE" > "$tmp"
+
+# Collapse 3+ trailing blank lines left behind into one (keep message tidy).
+perl -0pi -e 's/\n{3,}\z/\n\n/' "$tmp"
+
+cat "$tmp" > "$MSG_FILE"

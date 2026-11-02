@@ -5,14 +5,23 @@
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `TELEGRAM_BOT_TOKEN` | Yes | — | Telegram bot token |
-| `API_URL` | Yes | — | Public API URL for webhook |
-| `OPENAI_API_KEY` | Yes* | — | OpenAI key (for managed-whisper) |
+| `WEB_APP_URL` | Yes | — | Telegram Mini App URL |
+| `API_URL` | Yes | — | Public API URL for webhook / bot |
+| `OPENAI_API_KEY` | Yes* | — | OpenAI key (required if `SPEECH_PROVIDER=managed`) |
 | `DATABASE_URL` | Yes | — | PostgreSQL connection string |
+| `TELEGRAM_BOT_USERNAME` | No | `clean_speech_bot` | Bot username |
+| `SPEECH_PROVIDER` | No | `faster-whisper` | `faster-whisper` or `managed` |
+| `FASTER_WHISPER_URL` | No | `http://localhost:8001` | URL for local faster-whisper microservice |
+| `FREE_DAILY_SESSION_LIMIT` | No | `2` | Free speech analysis sessions per day |
+| `MIN_AUDIO_DURATION_SEC` | No | `15` | Minimum voice message duration in seconds |
+| `MAX_AUDIO_DURATION_SEC` | No | `90` | Maximum voice message duration in seconds |
+| `PREMIUM_STAR_PRICE` | No | `50` | Telegram Stars price for Premium |
+| `AI_BASE_URL` | No | `https://api.opencode.ai/v1` | LLM inference endpoint for AI speech coach |
+| `AI_API_KEY` | No | — | LLM inference API key |
+| `AI_MODEL` | No | `gpt-4o-mini` | LLM model for AI speech coach |
 | `CORS_ORIGIN` | No | — | Allowed CORS origin |
 | `LOG_LEVEL` | No | `info` | Fastify log level |
-| `SENTRY_DSN` | No | — | Sentry error tracking |
-| `SPEECH_PROVIDER` | No | `managed-whisper` | `managed-whisper` or `faster-whisper` |
-| `FREE_DAILY_LIMIT` | No | `5` | Free sessions per day |
+| `SENTRY_DSN` | No | — | Sentry error tracking DSN |
 | `NODE_ENV` | No | `development` | `production` or `development` |
 
 ## Deployment (Raspberry Pi + Tailscale)

@@ -1,0 +1,15 @@
+# llms.txt
+
+Speech TMA (jilimb0.github.io/Speech) — Анализ устной речи
+
+Speech TMA (jilimb0.github.io/Speech) — Telegram Mini App для аудио-анализа речи, детекции слов-паразитов, пауз и оценки чистоты дикции в реальном времени.
+
+## Features
+
+- **Анализ звукового потока**: извлечение темпа речи, пауз и слов-паразитов.
+- **Telegram Mini App**: нативная работа внутри клиента Telegram с тактильным откликом (Haptic Feedback).
+
+## Links
+
+- [Telegram Mini App](https://jilimb0.github.io/Speech/)
+- [GitHub Repository](https://github.com/jilimb0/Speech)

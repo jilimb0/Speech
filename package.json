@@ -25,7 +25,8 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
-      "biome check --write --no-errors-on-unmatched"
+      "biome check --write --no-errors-on-unmatched",
+      "vitest related --run"
     ],
     "*.{json,css,md}": [
       "biome format --write --no-errors-on-unmatched"
