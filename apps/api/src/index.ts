@@ -5,6 +5,7 @@ import Fastify from 'fastify';
 import { createBot } from './bot/index.js';
 import { config } from './config.js';
 import { registerTmaAuth } from './middleware/tma-auth.js';
+import { b2bTranscribeRoutes } from './routes/b2b-transcribe.js';
 import { paymentRoutes } from './routes/payments.js';
 import { sessionRoutes } from './routes/sessions.js';
 
@@ -47,6 +48,7 @@ logger.addHook('onSend', async (_request, reply) => {
 });
 
 await registerTmaAuth(logger);
+await logger.register(b2bTranscribeRoutes);
 await logger.register(sessionRoutes);
 await logger.register(paymentRoutes);
 

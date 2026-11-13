@@ -27,6 +27,11 @@ function isPublicRoute(url: string): boolean {
   return pathname === '/health' || pathname === '/api/health';
 }
 
+function isB2bServiceRoute(url: string): boolean {
+  const pathname = url.split('?')[0];
+  return pathname === '/api/v1/b2b/transcribe';
+}
+
 function shouldAllowDevBypass(initData: string | undefined): boolean {
   if (process.env.NODE_ENV === 'production') return false;
   if (process.env.NODE_ENV === 'test') return true;
@@ -40,7 +45,7 @@ function shouldAllowDevBypass(initData: string | undefined): boolean {
  */
 export async function registerTmaAuth(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', async (request, reply) => {
-    if (isPublicRoute(request.url)) {
+    if (isPublicRoute(request.url) || isB2bServiceRoute(request.url)) {
       return;
     }
 
