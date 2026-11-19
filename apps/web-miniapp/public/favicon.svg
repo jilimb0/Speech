@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Speech</title>
+  <style>
+    .bg { fill: #2481cc; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1b6eb2; }
+    }
+  </style>
+  <rect class="bg" width="64" height="64" rx="14" />
+  <rect x="13" y="25" width="5" height="14" rx="2.5" fill="#ffffff" />
+  <rect x="22" y="18" width="5" height="28" rx="2.5" fill="#ffffff" />
+  <rect x="30" y="12" width="5" height="40" rx="2.5" fill="#ffffff" />
+  <rect x="38" y="18" width="5" height="28" rx="2.5" fill="#ffffff" />
+  <rect x="47" y="25" width="5" height="14" rx="2.5" fill="#ffffff" />
+</svg>

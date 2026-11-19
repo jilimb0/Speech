@@ -72,8 +72,8 @@ async function runDataRetentionCleanup(): Promise<void> {
     if (purged > 0) {
       logger.log.info(`[Retention] Purged ${purged} expired sessions`);
     }
-  } catch {
-    // DB might be in-memory or not initialized in dev
+  } catch (err) {
+    logger.log.debug({ err }, '[Retention] Skipping expired session cleanup (DB unavailable)');
   }
 
   try {
@@ -90,10 +90,17 @@ async function runDataRetentionCleanup(): Promise<void> {
           if (now - s.mtimeMs > RETENTION_MS) {
             await unlink(fullPath);
           }
-        } catch {}
+        } catch (err) {
+          logger.log.debug(
+            { err, file },
+            '[Retention] Failed to inspect or remove temp audio file',
+          );
+        }
       }
     }
-  } catch {}
+  } catch (err) {
+    logger.log.warn({ err }, '[Retention] Temp audio directory cleanup failed');
+  }
 }
 
 const retentionTimer = setInterval(runDataRetentionCleanup, CLEANUP_INTERVAL_MS);

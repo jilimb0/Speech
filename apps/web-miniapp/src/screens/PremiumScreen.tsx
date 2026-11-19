@@ -17,15 +17,7 @@ export function PremiumScreen() {
     setError(null);
     try {
       const { link } = await api.createInvoice(selectedPlan);
-      const tg = (
-        window as unknown as {
-          Telegram?: {
-            WebApp?: {
-              openInvoice?: (url: string, callback?: (status: string) => void) => void;
-            };
-          };
-        }
-      ).Telegram?.WebApp;
+      const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : undefined;
 
       if (tg?.openInvoice) {
         tg.openInvoice(link, (status) => {
@@ -127,6 +119,8 @@ export function PremiumScreen() {
 
       <section className="px-6 flex flex-col gap-3">
         <Button
+          data-testid="premium-checkout-button"
+          data-analytics-id="funnel_checkout_click"
           className="w-full py-3 text-base font-semibold rounded-xl"
           disabled={loading}
           onClick={handleBuy}

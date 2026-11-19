@@ -1,0 +1,21 @@
+{
+  "name": "Чище — анализ речи",
+  "short_name": "Чище",
+  "description": "Telegram Mini App для аудио-анализа речи, подсчёта слов-паразитов, пауз и улучшения дикции.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#2481cc",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

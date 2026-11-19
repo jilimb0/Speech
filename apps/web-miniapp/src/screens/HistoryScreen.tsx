@@ -69,6 +69,8 @@ export function HistoryScreen() {
       header: '',
       render: (s: SessionListItem) => (
         <Button
+          data-testid="history-open-session"
+          data-analytics-id="funnel_core_open_session"
           size="sm"
           variant="ghost"
           onClick={() => navigate(`/session/${s.id}`)}
@@ -87,6 +89,8 @@ export function HistoryScreen() {
         right={
           <div className="flex items-center gap-1">
             <Button
+              data-testid="history-view-table"
+              data-analytics-id="history_view_table"
               variant={viewMode === 'table' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('table')}
@@ -95,6 +99,8 @@ export function HistoryScreen() {
               Таблица
             </Button>
             <Button
+              data-testid="history-view-cards"
+              data-analytics-id="history_view_cards"
               variant={viewMode === 'cards' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('cards')}
@@ -102,7 +108,13 @@ export function HistoryScreen() {
             >
               Карточки
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/progress')}>
+            <Button
+              data-testid="history-open-progress"
+              data-analytics-id="history_open_progress"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/progress')}
+            >
               {t.history.progress}
             </Button>
           </div>
@@ -121,7 +133,13 @@ export function HistoryScreen() {
       {!loading && error && (
         <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-4 text-center">
           <Text className="text-[#ff3b30]">{error}</Text>
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <Button
+            data-testid="history-retry-button"
+            data-analytics-id="history_retry"
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+          >
             {t.history.retry}
           </Button>
         </div>

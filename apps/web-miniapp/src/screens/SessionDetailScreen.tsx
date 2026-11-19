@@ -89,7 +89,13 @@ export function SessionDetailScreen() {
       {/* Score block */}
       <div className="flex flex-col items-center py-6 gap-3">
         <ScoreRing score={session.sessionScore} size={128} />
-        <Button variant="outline" size="sm" onClick={handleShare}>
+        <Button
+          data-testid="session-share-button"
+          data-analytics-id="funnel_core_share_result"
+          variant="outline"
+          size="sm"
+          onClick={handleShare}
+        >
           Поделиться результатом ↗
         </Button>
       </div>

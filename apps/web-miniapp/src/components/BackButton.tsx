@@ -27,6 +27,8 @@ export function BackButton({ to = '/' }: Props) {
   return (
     <button
       type="button"
+      data-testid="nav-back-button"
+      data-analytics-id="nav_back"
       onClick={() => navigate(to)}
       className="text-[var(--tg-theme-link-color)] text-[15px]"
     >

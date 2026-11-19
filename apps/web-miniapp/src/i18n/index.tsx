@@ -8,10 +8,10 @@ import { ua } from './ua.js';
 const locales: Record<LanguageCode, Translations> = { ru, ua, en };
 
 function detectLanguage(): LanguageCode {
-  const tg = (window as unknown as Record<string, unknown>).Telegram as
-    | { WebApp?: { initDataUnsafe?: { user?: { language_code?: string } } } }
-    | undefined;
-  const tgLang = tg?.WebApp?.initDataUnsafe?.user?.language_code;
+  const tgLang =
+    typeof window !== 'undefined'
+      ? window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code
+      : undefined;
   if (tgLang === 'uk' || tgLang === 'ru') return tgLang === 'uk' ? 'ua' : 'ru';
 
   const navLang = navigator.language?.slice(0, 2);

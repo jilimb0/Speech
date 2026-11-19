@@ -66,7 +66,13 @@ function ProgressGrid({ progress }: { progress: ProgressSummary }) {
         </div>
       ) : (
         <div className="p-4">
-          <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
+          <Button
+            data-testid="progress-view-history"
+            data-analytics-id="progress_view_history"
+            variant="outline"
+            className="w-full"
+            onClick={() => navigate('/')}
+          >
             {t.progress.viewHistory}
           </Button>
         </div>
@@ -104,7 +110,13 @@ export function ProgressScreen() {
       {!loading && error && (
         <div className="flex flex-col items-center justify-center min-h-[60dvh] p-6 gap-4 text-center">
           <Text className="text-[#ff3b30]">{error}</Text>
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <Button
+            data-testid="progress-retry-button"
+            data-analytics-id="progress_retry"
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.reload()}
+          >
             Повторить
           </Button>
         </div>
