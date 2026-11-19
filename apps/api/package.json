@@ -13,14 +13,14 @@
   },
   "dependencies": {
     "@fastify/cors": "^10.0.2",
-    "@fastify/static": "^9.3.0",
+    "@fastify/static": "^10.1.11",
     "@sentry/node": "^10.62.0",
     "@speech/analysis": "workspace:*",
     "@speech/sessions": "workspace:*",
     "@speech/shared": "workspace:*",
     "@speech/speech": "workspace:*",
     "@tgwrapper/core": "^0.20.1",
-    "fastify": "^5.2.1",
+    "fastify": "^5.12.8",
     "pino": "^10.3.1"
   },
   "engines": {
